@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='form.css') }}">
+    <script src="/static/scripts/inputbox.js"></script>
+    <!-- Scripts for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+
+    <title>New Submission</title>
+</head>
+<body>
+    <h1>Submit BioEco Metadata</h1>
+    <p>To select multiple options, hold control and click.</p>
+    <button class="back-button"><a href="{{ url_for('home') }}">Back to home</a></button>
+    <form method="POST" action="/submit">
+        {{ form_html|safe }}
+        <script src="/static/scripts/boundingmap.js"></script>
+        <script src="/static/scripts/marineregions.js"></script>
+        <script src="/static/scripts/form-validation.js"></script> 
+        <button type='submit' class="submit-button" name='action' value='submit_to_github' id="submit_to_github">Submit to GitHub</button>
+        <button type='submit' class="submit-button" name='action' value='print_json' id="print-json-btn">Print JSON</button>
+    </form>
+    <button class="back-button"><a href="{{ url_for('handle_form_submission') }}">To Top</a></button>
+    
+</body>
+</html>

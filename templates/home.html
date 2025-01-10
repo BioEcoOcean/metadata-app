@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EOV Metadata Submissions</title>
+    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+    <div class="logo-container">
+        <img src="/static/images/unesco_ioc_blue_eng.png" alt="UNESCO-IOC Logo" height="100px">
+        <img src="/static/images/OBIS_logo.png" alt="OBIS Logo" height="100px">
+        <img src="/static/images/bioecoocean_logo.png" alt="BioEcoOcean Logo" height="100px">
+        <img src="/static/images/GOOS-BioEco-logo.png" alt="GOOS-BioEco Logo" height="100px">
+    </div>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <h1>Submit a BioEco Metadata Entry</h1>
+    <p>This app is a test for generating metadata JSON-LD files and sitemaps for BioEco EOV programmes. JSON files are submitted to BioEcoOcean repo as issues. Updates are added as comments. Sitemaps are generated based on the submitted entry and displayed below for your convenience.</p>
+    <p>You must have a GitHub account to use this tool.</p>
+    <h2>Login to GitHub </h2>
+    [{{ user["login"] }}] is logged in.<br>
+    <a href="{{ url_for('github.login') }}"> <button class="logins">Login with GitHub</button></a>
+    &nbsp;
+    <a href="{{ url_for('logout') }}"> <button class="logins">Log out</button> </a>
+
+    <h2>Select an option:</h2>
+    <button><a href="{{ url_for('handle_form_submission') }}" class="button">New entry</a></button>
+    <button><a href="{{ url_for('update_entry') }}" class="button">Update an entry</a></button>
+    <h2>Programmes Already Submitted</h2>
+    <div class="container mt-5"></div>
+    <table class="table projects">
+        <thead>
+            <tr>
+                <th>Programme Name</th>
+                <th>Link</th>
+                <th>Sitemap for ODISCat</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for project in projects %}
+            <tr>
+                <td>{{ project.name }}</td>
+                <td><a href="{{ project.project_link }}" target="_blank">{{ project.project_link }}</a></td>
+                <td><a href="{{ project.sitemap_link }}" target="_blank">{{ project.sitemap_link }}</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    <button class="button-back"><a href="https://github.com/BioEcoOcean/metadata-tracking-dev" class="button">Go to GitHub</a></button>
+</body>
+</html>
