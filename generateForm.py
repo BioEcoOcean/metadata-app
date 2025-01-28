@@ -31,36 +31,6 @@ def generate_form(prefilled_data=None):
         <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('description', 'N/A')}</div>
         <textarea name='description' id='description'>{prefilled_data.get('description', '')}</textarea><br><br>
         """
-        # Contact Information
-        form_html += f"""
-        <label for='contact_name'>Programme Contacts:<span class="required">*</span><span class="info-circle" data-tooltip="Provide contact information for your project.">ⓘ</span></label>
-        <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('contactPoint', {}).get('name', 'N/A')}</div>
-        
-        """
-        # <input type='text' name='contact_name' id='contact_name' value="{prefilled_data.get('contactPoint', {}).get('name', '')}" required><br><br>
-        # # Contact email
-        # form_html += f"""
-        # <label for='contact_email'>Contact Email:<span class="required">*</span><span class="info-circle" data-tooltip="Enter the contact email address.">ⓘ</span></label>
-        # <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('contactPoint', {}).get('email', 'N/A')}</div>
-        # <input type='email' name='contact_email' id='contact_email' value='{prefilled_data.get('contactPoint', {}).get('email', '')}' required><br><br>
-        # """
-        form_html += f"""
-        <div id="contacts-container">
-        <!-- New contact inputs will be added here -->
-        </div>
-        <button type="button" onclick="addContactInput()">Add Contact</button>
-        <br><br>
-        """
-
-        #Temporal coverage
-        form_html += f"""
-        <label for='temporal_coverage'>Temporal Coverage:<span class="required">*</span></span><span class="info-circle" data-tooltip="Specify the date range for the project.">ⓘ</span></label>
-        <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('temporalCoverage', 'N/A')}</div>
-        <b>Start date: </b> <input type='date' name='temporal_coverage_start' id='temporal_coverage_start'
-            value="{prefilled_data.get('temporalCoverage', 'YYYY-MM-DD').split('/')[0] if prefilled_data.get('temporalCoverage') else 'YYYY-MM-DD'}" required><br><br>
-        <b>End date: </b> <input type='date' name='temporal_coverage_end' id='temporal_coverage_end'
-            value="{prefilled_data.get('temporalCoverage', 'YYYY-MM-DD').split('/')[1] if prefilled_data.get('temporalCoverage') else 'YYYY-MM-DD'}" required><br><br>
-        """
         #keywords section
         keywords = prefilled_data.get("keywords", [])
         keywords_display = ", ".join(keywords) if keywords else "N/A"
@@ -74,51 +44,6 @@ def generate_form(prefilled_data=None):
         form_html += "</div>"
         form_html += '<button type="button" onclick="addKeywordInput()">Add Another Keyword</button><br><br>'
 
-
-        # Spatial Coverage
-        regional_id_str = 'MRGID: '
-        form_html += f"""
-        <label for="spatial_coverage_name">Spatial Coverage <span class='info-circle' data-tooltip='Specify the name and MRGID of the area where the programme takes place. Use the search box to select an area from Marine Regions. Use the map below to also add bounding area coordinates.'>ⓘ</span></label>Start typing to search for a marine location. Names are obtained from <a href="https://www.marineregions.org/gazetteer.php?p=search">Marine Regions Gazetteer</a>.<br>
-        <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('spatialCoverage', {}).get("name", 'N/A')} {regional_id_str}{prefilled_data.get('spatialCoverage', {}).get("identifier", 'N/A')}
-
-        </div>
-        <!-- Search Box -->
-        <input type="text" id="search_regions" placeholder="Search for a region..." />
-
-        <!-- Table to display search results -->
-        <table id="regions_table" style="width:100%; display:none;">
-            <thead>
-                <tr>
-                    <th>Region Name</th>
-                    <th>Type</th>
-                    <th>Source</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Dynamically populated rows will go here -->
-            </tbody>
-        </table>
-        <label for="spatial_coverage_identifier">Auto-populated fields:</label>
-        Name: <input type="text" name="spatial_coverage_name" id="spatial_coverage_name" value="{prefilled_data.get('spatialCoverage', {}).get("name", '')}" readonly><br>
-        MRGID: <input type="text" name="spatial_coverage_identifier" id="spatial_coverage_identifier" value="{prefilled_data.get('spatialCoverage', {}).get("identifier", '')}" readonly><br><br>
-        """
-        form_html += f"""
-        <a>Draw Bounding Area</a>
-        <div id="map" style="width: 60%; height: 300px;"></div>
-        <label for="maxy" id="maxy">North (max latitude):</label>
-        <input type="text" id="north" name="north" readonly><br>
-
-        <label for="south" id="miny">South (min latitude):</label>
-        <input type="text" id="south" name="south" readonly><br>
-
-        <label for="east" id="maxx">East (max longitude):</label>
-        <input type="text" id="east" name="east" readonly><br>
-
-        <label for="west" id="minx">West (min longitude):</label>
-        <input type="text" id="west" name="west" readonly><br>
-        <br>
-
-        """
         # License section
         license_field = form_schema.get("categories_definition", {}).get("license", None)
         if license_field:
@@ -126,7 +51,7 @@ def generate_form(prefilled_data=None):
 
             # Show previously entered value above the field
             form_html += f"<label for='license'>{license_field['name']}:<span class='required'>*</span><span class='info-circle' data-tooltip='Select the most appropriate license for the programme metadata.'>ⓘ</span></label>"
-            form_html += f"<p>{license_field['description']}</p>"
+            form_html += f"<p>Please select which Creative Commons license (<a href='https://creativecommons.org/share-your-work/cclicenses/'>https://creativecommons.org/share-your-work/cclicenses/</a>) you expect the programme metadata to be made available.</p>"
             if license_value:
                 form_html += f"<div class='previous'><strong>Previously entered:</strong> {license_value}</div>"
             else:
@@ -159,6 +84,117 @@ def generate_form(prefilled_data=None):
         </select>
         """
 
+        # Contact Information
+        form_html += f"""
+        <label for='contact_name'><h3>Programme Contacts:<span class="required">*</span><span class="info-circle" data-tooltip="Provide contact information for your project.">ⓘ</span></label></h3>
+        <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('contactPoint', {}).get('name', 'N/A')}, {prefilled_data.get('contactPoint', {}).get('email', '')} {prefilled_data.get('contactPoint', {}).get('role', '')} {prefilled_data.get('contactPoint', {}).get('identifier', '')}</div>
+        
+        """
+        form_html += f"""
+        <div id="contacts-container">
+        </div>
+        """
+        contacts = prefilled_data.get("contactPoint", [])  # Expecting a list of dicts with name, email, role, id
+        print("contact info:", contacts)
+        #form_html += "<label for='contacts'>Contacts: <span class='info-circle' data-tooltip='Enter contact information for the project.'>ⓘ</span></label>"
+        print(f"Contacts data type: {type(contacts)}, content: {contacts}")
+
+        # Call the JavaScript function for each prefilled contact
+        if contacts:
+            if isinstance(contacts, dict):  # Single contact
+                contacts = [contacts]  
+            for contact in contacts:
+                contact_name = contact.get("name", "")
+                contact_email = contact.get("email", "")
+                contact_role = contact.get("role", "")
+                contact_id = contact.get("id", "")
+                form_html += f"""
+                <script>
+                    addContactInput("{contact_name}", "{contact_email}", "{contact_role}", "{contact_id}");
+                </script>
+                """
+        else:
+            form_html += """
+            
+            """
+
+        # Add the dynamic container for new inputs
+        form_html += """
+        <div id="contacts-container"></div>
+        <button type="button" onclick="addContactInput()">Add Contact</button>
+        <br><br>
+        """
+        
+        
+        #Coverage
+        form_html += "<h3>Coverage</h3>"
+        #Temporal coverage
+        form_html += f"""
+        <h4><label for='temporal_coverage'>Temporal Coverage:<span class="required">*</span></span><span class="info-circle" data-tooltip="Specify the date range for the project.">ⓘ</span></label></h4>
+        <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('temporalCoverage', 'N/A')}</div>
+        <b>Start date: </b> <input type='date' name='temporal_coverage_start' id='temporal_coverage_start'
+            value="{prefilled_data.get('temporalCoverage', 'YYYY-MM-DD').split('/')[0] if prefilled_data.get('temporalCoverage') else 'YYYY-MM-DD'}" required><br>
+        <b>End date: </b> <input type='date' name='temporal_coverage_end' id='temporal_coverage_end'
+            value="{prefilled_data.get('temporalCoverage', 'YYYY-MM-DD').split('/')[1] if prefilled_data.get('temporalCoverage') else 'YYYY-MM-DD'}" required><br><br>
+        """
+        
+        # Spatial Coverage
+        regional_id_str = 'MRGID: '
+        form_html += f"""
+        <h4><label for="spatial_coverage_name">Spatial Coverage: <span class='info-circle' data-tooltip='Specify the name and MRGID of the area where the programme takes place. Use the search box to select an area from Marine Regions. Use the map below to also add bounding area coordinates.'>ⓘ</span></label></h4>
+        <a>Use the search box below to search for a marine location. Names are obtained from <a href="https://www.marineregions.org/gazetteer.php?p=search">Marine Regions Gazetteer</a>.
+        <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('spatialCoverage', {}).get("name", 'N/A')} {regional_id_str}{prefilled_data.get('spatialCoverage', {}).get("identifier", 'N/A')}</div>
+        <a>Search:</a>
+        <input type="text" id="search_regions" placeholder="Search for a region..." />
+        <br><br>
+        <!-- Table to display search results -->
+        <table id="regions_table" style="width:100%; display:none;">
+            <thead>
+                <tr>
+                    <th>Region Name</th>
+                    <th>Type</th>
+                    <th>Source</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dynamically populated rows will go here -->
+            </tbody>
+        </table>
+        <a><i>Auto-populated fields:</i></a><br>
+        Name: <input type="spatial" name="spatial_coverage_name" id="spatial_coverage_name" value="{prefilled_data.get('spatialCoverage', {}).get("name", '')}" readonly>
+        MRGID: <input type="text" name="spatial_coverage_identifier" id="spatial_coverage_identifier" value="{prefilled_data.get('spatialCoverage', {}).get("identifier", '')}" readonly><br><br>
+        """
+        
+        boundingcoords = {prefilled_data.get('spatialCoverage', {}).get("geo", {}).get("box", '')}
+        if isinstance(boundingcoords, set):
+            # Extract the string from the set
+            boundingcoords = next(iter(boundingcoords))
+        print("coords :", boundingcoords)
+        coordinates = boundingcoords.split(" ") # Split the string into four parts
+        south = coordinates[0] if len(coordinates) > 0 else ""
+        west = coordinates[1] if len(coordinates) > 1 else ""
+        north = coordinates[2] if len(coordinates) > 2 else ""
+        east = coordinates[3] if len(coordinates) > 3 else ""
+        
+        form_html += f"""
+        <a>Draw Bounding Area</a>
+        <div id="map" style="width: 60%; height: 300px;"></div>
+        <label for="maxy" id="maxy">North (max latitude):</label>
+        <input type="text" id="north" name="north" value="{north}" readonly><br>
+
+        <label for="south" id="miny">South (min latitude):</label>
+        <input type="text" id="south" name="south" value="{south}"readonly><br>
+
+        <label for="east" id="maxx">East (max longitude):</label>
+        <input type="text" id="east" name="east" value="{east}"readonly><br>
+
+        <label for="west" id="minx">West (min longitude):</label>
+        <input type="text" id="west" name="west" value="{west}"readonly><br>
+        <br>
+
+        """
+        
+        # EOVs and Variables
         def format_special_category_values(prefilled_data, category_key):
             """
             Handles special formatting for `variableMeasured` and `measurementTechnique`.
@@ -175,7 +211,7 @@ def generate_form(prefilled_data=None):
             for field_key, field in fields.items():
                 value = prefilled_data.get(field_key, [])
                 if "options" in field:  # Checkbox handling
-                    html += f"<label for='{field_key}'>{field.get('name', 'Unknown Field')}</label>"
+                    html += f"<label for='{field_key}'><h4>{field.get('name', 'Unknown Field')}</h4></label>"
 
                     # Ensure category_value is a list if it's a string
                     category_value_list = category_value.split(", ") if isinstance(category_value, str) else category_value
@@ -277,7 +313,7 @@ def generate_form(prefilled_data=None):
         # Extract URLs, skipping items without 'url'
         sops_urls = [item["url"] for item in sops if isinstance(item, dict) and "url" in item]
         sops_display = ", ".join(sops_urls) if sops_urls else "N/A"
-        form_html += "<label for='sops'> SOPs <span class='info-circle' data-tooltip='Provide a link to any Methods or Standard Operating Procedures used.'>ⓘ</span></label> Provide a link to any Methods or Standard Operating Procedures used.<br>"
+        form_html += "<label for='sops'><h4> SOPs <span class='info-circle' data-tooltip='Provide a link to any Methods or Standard Operating Procedures used.'>ⓘ</span></h4></label> Provide a link to any Methods or Standard Operating Procedures used.<br>"
         form_html += f"""
         <div class="previous"><strong>Previously entered:</strong> {sops_display}</div>
         """
@@ -293,18 +329,18 @@ def generate_form(prefilled_data=None):
         form_html += f"""
             <label for="funder_name">Funding Organization Name: <span class='info-circle' data-tooltip='Name of funding organization.'>ⓘ</span></label>
             <div class="previous"><strong>Previously entered:</strong> {prefilled_data.get('funding',{}).get("funder",{}).get("name", 'N/A')}</div>
-            <input type="text" id="funder_name" name="funder_name" placeholder="Enter funder name" value="{prefilled_data.get('funding',{}).get("funder",{}).get("name", '')}"><br>
+            <input type="text" id="funder_name" name="funder_name" placeholder="Enter funder name" value="{prefilled_data.get('funding',{}).get("funder",{}).get("name", '')}"><br><br>
 
             <label for="funder_url">Funding Organization URL: <span class='info-circle' data-tooltip='URL of funding organization.'>ⓘ</span></label>
             <div class="previous"><strong>Previously entered:</strong> {prefilled_data.get('funding',{}).get("funder",{}).get('url', 'N/A')}</div>
-            <input type="url" id="funder_url" name="funder_url" placeholder="Enter funder URL" value="{prefilled_data.get('funding',{}).get("funder",{}).get('url', '')}"><br>
+            <input type="url" id="funder_url" name="funder_url" placeholder="Enter funder URL" value="{prefilled_data.get('funding',{}).get("funder",{}).get('url', '')}"><br><br>
 
             <label for="funding_name">Name of Funding Award: <span class='info-circle' data-tooltip='Name of the funding or award received, e.g. Horizon Europe'>ⓘ</span></label>
             <div class="previous"><strong>Previously entered:</strong> {prefilled_data.get('funding',{}).get('name', 'N/A')}</div>
-            <input type="text" id="funding_name" name="funding_name" placeholder="Enter funding name" value="{prefilled_data.get('funding',{}).get('name', '')}"><br>
+            <input type="text" id="funding_name" name="funding_name" placeholder="Enter funding name" value="{prefilled_data.get('funding',{}).get('name', '')}"><br><br>
 
             <label for="funding_identifier">Funding Identifier Number: <span class='info-circle' data-tooltip='The identifier associated with the funding, e.g. grant number.'>ⓘ</span></label>
-            <div class="previous"><strong>Previously entered:</strong> {prefilled_data.get('funding',{}).get('identifier', 'N/A')}</div> E.g. grant number<br>
+            <div class="previous"><strong>Previously entered:</strong> {prefilled_data.get('funding',{}).get('identifier', 'N/A')}</div>
             <input type="text" id="funding_identifier" name="funding_identifier" placeholder="Enter funding identifier" value="{prefilled_data.get('funding',{}).get('identifier', '')}"><br>
         """
         form_html += "</div>"

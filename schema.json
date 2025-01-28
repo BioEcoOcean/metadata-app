@@ -201,7 +201,7 @@
                         "12": {
                             "name": "Turbulent diapycnal fluxes",
                             "id": "turbulent_diapycnal_fluxes",
-                            "propertyID": "https://goosocean.org/what-we-do/framework/essential-ocean-variables/"
+                            "propertyID": ["https://goosocean.org/what-we-do/framework/essential-ocean-variables/"]
                         },
                         "13": {
                             "name": "Ocean bottom pressure",
@@ -248,12 +248,12 @@
                         "20": {
                             "name": "Stable carbon isotopes",
                             "id": "stable_carbon_isotopes",
-                            "propertyID": "https://goosocean.org/document/17479"
+                            "propertyID": ["https://goosocean.org/document/17479"]
                         },
                         "21": {
                             "name": "Dissolved organic carbon",
                             "id": "dissolved_organic_carbon",
-                            "propertyID": "https://goosocean.org/document/17480"
+                            "propertyID": ["https://goosocean.org/document/17480"]
                         },
                         "22": {
                             "name": "Ocean colour",
@@ -264,7 +264,7 @@
                         "23": {
                             "name": "Ocean sound",
                             "id": "ocean_sound",
-                            "propertyID": "https://goosocean.org/document/22567"
+                            "propertyID": ["https://goosocean.org/document/22567"]
                             }
                         }
                 },

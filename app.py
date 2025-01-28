@@ -188,7 +188,7 @@ def update_entry():
         # Fetch the selected issue
         print(str(request))
         print('setting default value')
-        session['issue_number'] = 'woo'
+        #session['issue_number'] = 'woo'
         print("session issue number after setting default value: ", session.get('issue_number', 'N/A'))
         issue_number = request.form.get("selected_issue", 'N/A')
         if issue_number:
@@ -199,8 +199,8 @@ def update_entry():
             issue_url = f"https://api.github.com/repos/{REPO_OWNER}/{GITHUB_REPO}/issues/{issue_number}"
             headers = {"Authorization": f"token {GITHUB_TOKEN}"}
             response = requests.get(issue_url, headers=headers)
-            #response_data = response.json()  # Debug: Inspect the full response from GitHub
-            #print(f"Response Data: {response_data}")
+            response_data = response.json()  # Debug: Inspect the full response from GitHub
+            print(f"Response Data: {response_data}")
 
             if response.status_code == 200:
                 # Parse the issue data
