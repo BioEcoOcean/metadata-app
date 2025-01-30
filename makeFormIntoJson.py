@@ -1,6 +1,6 @@
 from flask import request
 
-def makeFormJson(): #have to see if I can use this also when updating an issue. also separate out the github and json buttons
+def makeFormJson(): 
     if request.method == "POST":
         # Step 1: Collect and sanitize submitted form data
         submitted_data = request.form.to_dict(flat=False)  # Support multi-select fields
@@ -28,18 +28,37 @@ def makeFormJson(): #have to see if I can use this also when updating an issue. 
         license_name, license_url = license_data.split("|") if license_data else (license_data, "")
         
         # Extract funding and funder details
-        funder_name = sanitized_data.get("funder_name", "")
-        funder_url = sanitized_data.get("funder_url", "")
-        funding_name = sanitized_data.get("funding_name", "")
-        funding_identifier = sanitized_data.get("funding_identifier", "")
+        funder_name = sanitized_data.get("funder_name", [])
+        funder_url = sanitized_data.get("funder_url", [])
+        funding_name = sanitized_data.get("funding_name", [])
+        funding_identifier = sanitized_data.get("funding_identifier", [])
+
+        funders = []
+        for i in range(max(len(funder_name), len(funder_url))):
+            funders.append({
+                "@type": "FundingAgency",
+                "name": funder_name[i] if i < len(funder_name) else "",
+                "legalName": funder_name[i] if i < len(funder_name) else "",
+                "url": funder_url[i] if i < len(funder_url) else ""
+            })
+
+        # Restructure the funding field
+        funding = []
+        for i in range(max(len(funding_name), len(funding_identifier))):
+            funding.append({
+                "@type": "MonetaryGrant",
+                "name": funding_name[i] if i < len(funding_name) else "",
+                "identifier": funding_identifier[i] if i < len(funding_identifier) else "",
+                "funder": funders  # Add the funders list
+            })
+        sanitized_data["funding"] = funding
 
         #Extract contact details
-        sanitized_data = {
-        "contact_names": request.form.getlist("contact_names"),
-        "contact_emails": request.form.getlist("contact_emails"),
-        "contact_roles": request.form.getlist("contact_roles"),
-        "contact_ids": request.form.getlist("contact_ids") if "contact_ids" in request.form else [], 
-    }
+        #sanitized_data["contact_names"] = request.form.getlist("contact_names")
+        #sanitized_data["contact_emails"] = request.form.getlist("contact_emails")
+        #sanitized_data["contact_roles"] = request.form.getlist("contact_roles")
+        #sanitized_data["contact_ids"] = request.form.getlist("contact_ids") if "contact_ids" in request.form else [] 
+
 
         print("bounds: ", sanitized_data.get("north", [""])[0])
         print("san data: ", sanitized_data)
@@ -52,10 +71,10 @@ def makeFormJson(): #have to see if I can use this also when updating an issue. 
             },
             "@type": "Project",
             "@id": f"https://example.com/json/{sanitized_data.get('project_name', ['Unnamed'])[0]}",
-            "name": sanitized_data.get("project_name", ["Unnamed"])[0],
+            "name": sanitized_data.get("project_name", [""])[0],
             "url": sanitized_data.get("url", [""])[0],
             "description": sanitized_data.get("description", [""])[0],
-            "contactPoints": [],
+            "contactPoint": [],
             "frequency": sanitized_data.get("frequency", ["Never"])[0],
             "temporalCoverage": f"{temporal_coverage_start}/{temporal_coverage_end}" if temporal_coverage_start and temporal_coverage_end else "",
             "keywords": [keyword.strip() for keyword in sanitized_data.get("keywords", []) if keyword.strip()],
@@ -78,21 +97,7 @@ def makeFormJson(): #have to see if I can use this also when updating an issue. 
             ],
             "variableMeasured": [],
             "measurementTechnique": [],
-            "funding": [
-                {
-                    "@type": "MonetaryGrant",
-                    "name": funding_name,
-                    "identifier": funding_identifier,
-                    "funder": [
-                        {
-                            "@type": "FundingAgency",
-                            "name": funder_name,
-                            "legalName": funder_name,
-                            "url": funder_url
-                        }
-                    ]
-                }
-            ]
+            "funding": sanitized_data.get("funding", [])
         }
 
         # Step 3: Handle BioEco EOVs and Other EOVs, and append to variableMeasured
@@ -117,30 +122,29 @@ def makeFormJson(): #have to see if I can use this also when updating an issue. 
                 })
 
         # Add contact points
-        #contact_points = []
-        for i in range(len(sanitized_data["contact_names"])):
-        # Safely get each field for the current contact
-            name = sanitized_data["contact_names"][i]
-            email = sanitized_data["contact_emails"][i]
-            role = sanitized_data["contact_roles"][i]
-            identifier = sanitized_data["contact_ids"][i] if i < len(sanitized_data["contact_ids"]) else ""
+        contact_names = request.form.getlist("contact_names")
+        contact_emails = request.form.getlist("contact_emails")
+        contact_roles = request.form.getlist("contact_roles")
+        contact_ids = request.form.getlist("contact_ids")
+        num_contacts = max(len(contact_names), len(contact_emails), len(contact_roles), len(contact_ids))
 
-            # Add the contact entry to the list
-            schema_entry['contactPoints'].append({
+        # Iterate through the list, for the number of contacts
+        for i in range(num_contacts):
+            # Safely get each field for the current contact, defaulting to empty string if not available
+            name = contact_names[i] if i < len(contact_names) else ""
+            email = contact_emails[i] if i < len(contact_emails) else ""
+            role = contact_roles[i] if i < len(contact_roles) else ""
+            identifier = contact_ids[i] if i < len(contact_ids) else ""
+
+            # Add the contact entry to the 'contactPoint' list
+            schema_entry['contactPoint'].append({
                 "@type": "ContactPoint",
                 "name": name,
                 "email": email,
                 "role": role,
                 "identifier": identifier
             })
-        {
-                "@type": "ContactPoint",
-                "name": sanitized_data.get("contact_names", [""])[0],
-                "email": sanitized_data.get("contact_emails", [""])[0],
-                "identifer": sanitized_data.get("contact_id", [""])[0],
-                "role": sanitized_data.get("contact_roles", [""])[0],
-            }
-        
+       
         # Add SOP URLs to measurementTechnique
         sop_urls = [url.strip() for url in request.form.getlist("sops") if url.strip()]
         if sop_urls:

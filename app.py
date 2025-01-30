@@ -172,6 +172,11 @@ def handle_submission():
     else:
         return result
 
+@app.route('/success')
+def success():
+    issue_number = request.args.get('issue_number', 'Unknown')
+    return render_template('success.html', issue_number=issue_number)
+
 @app.route("/update_entry", methods=["GET", "POST"])
 def update_entry():
     print(">>> ", request.method)
@@ -219,7 +224,7 @@ def update_entry():
 
                 print("Parsed JSON:", issue_data_json)  # Debug: Check the parsed JSON
 
-                # Map the GitHub issue data to your schema format
+                # Map the GitHub issue data to schema format
                 schema_entry = map_form_to_schema(issue_data_json)
 
                 # Generate the form with the mapped data
@@ -268,49 +273,4 @@ def submit_update():
             return jsonify({"success": False, "error": comment_response.json()}), comment_response.status_code
     else:
         return jsonify({"success": False, "error": response.json()}), response.status_code
-
-
-def create_issue(title, body):
-    """
-    Create a new issue in the GitHub repository.
-    """
-    headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github.v3+json"
-    }
-    issue_url = f"https://api.github.com/repos/{GITHUB_REPO}/issues"
-
-    data = {
-        "title": title,
-        "body": body,
-    }
-
-    response = requests.post(issue_url, json=data, headers=headers)
-    if response.status_code == 201:
-        return response.json()
-    else:
-        print(f"Failed to create issue: {response.status_code}, {response.text}")
-        return None
-
-def update_issue(issue_number, title, body):
-    """
-    Update an existing issue in the GitHub repository.
-    """
-    headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github.v3+json"
-    }
-    issue_url = f"https://api.github.com/repos/{GITHUB_REPO}/issues/{issue_number}"
-
-    data = {
-        "title": title,
-        "body": body,
-    }
-
-    response = requests.patch(issue_url, json=data, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Failed to update issue: {response.status_code}, {response.text}")
-        return None
 
