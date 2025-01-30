@@ -1,0 +1,6 @@
+.DS_Store
+server.crt
+server.key
+.env
+.python-version
+__pycache__
