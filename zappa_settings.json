@@ -1,0 +1,13 @@
+{
+    "production": {
+        "app_function": "app.app",
+        "aws_region": "us-east-1",
+        "project_name": "zappa-bioeco-app",
+        "runtime": "python3.10",
+        "s3_bucket": "zappa-bioecoocean-metadata-app-123456",
+        "manage_roles": false,
+        "profile_name": "pieterprovoost",
+        "slim_handler": true,
+        "role_arn": "arn:aws:iam::063582114381:role/zappa-bioeco-role"
+    }
+}
