@@ -23,14 +23,11 @@ set_flask_environment(app=app)
 # app.config['SESSION_USE_SIGNER'] = True
 # Session(app)
 
-if __name__ == "__main__":
-    app.run(debug=True, host="127.0.0.1", port=5000, ssl_context=("server.crt", "server.key"))
-
 # Set up the OAuth
 github_blueprint=make_github_blueprint(
     client_id=os.getenv('CLIENT_ID'),
     client_secret=os.getenv('CLIENT_SECRET'),
-    redirect_url="https://127.0.0.1:5000/github/authorized"
+    redirect_url="http://eovmetadata.obis.org/github/authorized"
     )
 app.register_blueprint(github_blueprint)
 
@@ -274,3 +271,5 @@ def submit_update():
     else:
         return jsonify({"success": False, "error": response.json()}), response.status_code
 
+if __name__ == "__main__":
+    app.run(debug=True, host="127.0.0.1", port=5000) #, ssl_context=("server.crt", "server.key"))
