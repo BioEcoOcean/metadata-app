@@ -91,7 +91,7 @@ button.back-button{
     border-radius: 4px;
 }
 select{
-    width: 60%;
+    width: 50%;
 }
 input{
     width: 50%;
@@ -100,7 +100,7 @@ input[type="date"]{
     width: 30%;
 }
 input[type="checkbox"]{
-    width: 5%;
+    width: 20px;
     transform: scale(1.4);
 }
 #spatial_coverage_name{
@@ -166,11 +166,11 @@ textarea{
   }
   
   /* Tooltip styling */
-  .info-circle::after {
+.info-circle::after {
     content: attr(data-tooltip); /* Use the data-tooltip attribute */
     position: absolute;
-    bottom: 120%; /* Position above the info circle */
-    left: 50%;
+    bottom: 10%; /* Position above the info circle */
+    left: 900%;
     transform: translateX(-50%);
     background-color: #333;
     color: #fff;
@@ -185,11 +185,29 @@ textarea{
     z-index: 100;
   }
   
-  /* Show tooltip on hover */
-  .info-circle:hover::after {
+.info-circle:hover::after {  /* Show tooltip on hover */
     opacity: 1;
     visibility: visible;
     text-wrap:inherit;
+    width: max-content; 
+    max-width: 200px
   }
   /* Container with 2 rows and 2 columns */
-
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 columns */
+    grid-template-rows: repeat(2, 1fr);    /* 2 rows */
+    width: 50%; 
+}
+.grid-item {
+    text-align: center;
+    padding: 1px;
+}
+.checkbox-container {
+    max-height: 150px;
+    overflow-y: auto;
+    padding-right: 10px;  /* Prevent scrollbar overlap */
+    border: 1px solid #8eb7cb54; /* Optional: Add a border to the container */
+    background-color: #8eb7cb18; /* Optional: Add background color */
+    width: 500px;
+}

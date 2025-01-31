@@ -36,10 +36,10 @@ map.addLayer(drawnItems);
 rectangle.on('edit', function() {
     var bounds = rectangle.getBounds();
     // Update the input fields with the coordinates from the rectangle
-    document.getElementById('north').value = bounds.getNorth();
-    document.getElementById('south').value = bounds.getSouth();
-    document.getElementById('east').value = bounds.getEast();
-    document.getElementById('west').value = bounds.getWest();
+    document.getElementById('north').value = bounds.getNorth().toFixed(3);
+    document.getElementById('south').value = bounds.getSouth().toFixed(3);
+    document.getElementById('east').value = bounds.getEast().toFixed(3);
+    document.getElementById('west').value = bounds.getWest().toFixed(3);
 });
 
 // Update the rectangle when the inputs are prepopulated
