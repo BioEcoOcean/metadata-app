@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <title>Submission successful</title>
+</head>
+<body>
+    <h1>Submission successful</h1>
+    <p>{{ message }}</p>
+    {% if issue_url %}
+    <p>You can view your submission <a href="{{ issue_url }}" target="_blank">here</a>.</p>
+    {% endif %}
+    <button class="back-button"><a href="{{ url_for('home') }}" class="button">Back to home</a></button>
+    
+</body>
+</html>

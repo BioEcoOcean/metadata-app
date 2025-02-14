@@ -120,11 +120,6 @@
                     "schema_mapping": "variableMeasured",
                     "allow_multiple": true,
                     "options": {
-                        "none": {
-                            "name": "None",
-                            "id": "none",
-                            "propertyID": "filler"
-                        },
                         "sea_state": {
                             "name": "Sea state",
                             "id": "sea_state",
@@ -268,6 +263,150 @@
                             }
                         }
                 },
+                "sub-variables": {
+                    "name": "EOV Sub-Variables",
+                    "description": "Select all relevant sub-variables.",
+                    "type": "dropdown",
+                    "allow_multiple": true,
+                    "schema_mapping": "variableMeasured",
+                    "options":{
+                        "1": {
+                            "name": "Genetic composition Genetic diversity",
+                            "id": "genetic_diversity",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "2": {
+                            "name": "Genetic composition Genetic differentiation",
+                            "id": "genetic_differentiation",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "3": {
+                            "name": "Fish abundance",
+                            "id": "fish_abundance",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "4": {
+                            "name": "Fish abundance and distribution",
+                            "id": "fish_abundance_and_distribution",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "5": {
+                            "name": "Fish abundance by size/age/stage",
+                            "id": "fish_abundance_by_size_age_stage",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "6": {
+                            "name": "Fish biomass by size/age/stage",
+                            "id": "fish_biomass_by_size_age_stage",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "7": {
+                            "name": "Fish community composition",
+                            "id": "fish_community_composition",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "8": {
+                            "name": "Fish community composition - community abundance",
+                            "id": "fish_community_composition_community_abundance",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "9": {
+                            "name": "Fish community composition - interaction diversity",
+                            "id": "fish_community_composition_interaction_diversity",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "10": {
+                            "name": "Fish community composition - taxonomic/phylogenetic diversity",
+                            "id": "fish_community_composition_taxonomic_phylogenetic_diversity",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "11": {
+                            "name": "Fish community composition - trait diversity",
+                            "id": "fish_community_composition_trait_diversity",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "12": {
+                            "name": "Fish distribution",
+                            "id": "fish_distribution",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "13": {
+                            "name": "Fish ecosystem functioning",
+                            "id": "fish_ecosystem_functioning",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "14": {
+                            "name": "Fish ecosystem functioning - ecosystem disturbances",
+                            "id": "fish_ecosystem_functioning_ecosystem_disturbances",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "15": {
+                            "name": "Fish ecosystem functioning - ecosystem phenology",
+                            "id": "fish_ecosystem_functioning_ecosystem_phenology",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "16": {
+                            "name": "Fish ecosystem structure",
+                            "id": "fish_ecosystem_structure",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "17": {
+                            "name": "Fish ecosystem structure - ecosystem distribution",
+                            "id": "fish_ecosystem_structure_ecosystem_distribution",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "18": {
+                            "name": "Fish genetic composition",
+                            "id": "fish_genetic_composition",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "19": {
+                            "name": "Fish genetic composition - effective population",
+                            "id": "fish_genetic_composition_effective_population",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "20": {
+                            "name": "Fish genetic composition - genetic differentiation",
+                            "id": "fish_genetic_composition_genetic_differentiation",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "21": {
+                            "name": "Fish genetic composition - genetic diversity",
+                            "id": "fish_genetic_composition_genetic_diversity",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "22": {
+                            "name": "Fish genetic composition - inbreeding",
+                            "id": "fish_genetic_composition_inbreeding",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "23": {
+                            "name": "Fish species traits",
+                            "id": "fish_species_traits",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "24": {
+                            "name": "Fish species traits - morphology",
+                            "id": "fish_species_traits_morphology",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "25": {
+                            "name": "Fish species traits - movement",
+                            "id": "fish_species_traits_movement",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "26": {
+                            "name": "Fish species traits - phenology",
+                            "id": "fish_species_traits_phenology",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        },
+                        "27": {
+                            "name": "Fish species traits - physiology",
+                            "id": "fish_species_traits_physiology",
+                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                        }
+                    }
+                },
                 "ebvs": {
                     "name": "Essential Biodiversity Variables",
                     "description": "Select all relevant EBVs associated with the programme.",
@@ -275,11 +414,6 @@
                     "allow_multiple": true,
                     "schema_mapping": "variableMeasured",
                     "options":{
-                        "0": {
-                            "name": "None",
-                            "id": "none",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
-                        },
                         "1": {
                             "name": "Genetic composition Genetic diversity",
                             "id": "genetic_diversity",

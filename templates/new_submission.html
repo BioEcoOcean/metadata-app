@@ -15,8 +15,8 @@
 </head>
 <body>
     <h1>Submit BioEco Metadata</h1>
-    <p>To select multiple options, hold control and click.</p>
-    <button class="back-button"><a href="{{ url_for('home') }}">Back to home</a></button>
+    <p>Fill the form below, ensuring required fields are populated, and then submit.</p>
+    <button class="back-button"><a href="{{ url_for('home') }}" class="button">Back to home</a></button>
     <form method="POST" action="/submit">
         {{ form_html|safe }}
         <script src="/static/scripts/boundingmap.js"></script>
@@ -25,7 +25,13 @@
         <button type='submit' class="submit-button" name='action' value='submit_to_github' id="submit_to_github">Submit to GitHub</button>
         <button type='submit' class="submit-button" name='action' value='print_json' id="print-json-btn">Print JSON</button>
     </form>
-    <button class="back-button"><a href="{{ url_for('handle_form_submission') }}">To Top</a></button>
+    <br><br><button class="back-button" id="scroll-to-top">To Top</button>
+    <script>
+        document.getElementById("scroll-to-top").addEventListener("click", function(event) {
+            event.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
     
 </body>
 </html>

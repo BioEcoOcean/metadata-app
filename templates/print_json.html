@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism-tomorrow.min.css">
+    <title>Printed JSON</title>
+</head>
+<body>
+    <h1>Printed JSON</h1>
+    <button class="back-button" onclick="goBack()">Go Back</button><br><br>
+    <div class="code-container">
+        <button class="copy-button" onclick="copyToClipboard()">Copy to Clipboard</button>
+        <pre>
+            <code id="json-code" class="language-json">{{ schema_entry }}</code>
+        </pre>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-json.min.js"></script>
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+        function copyToClipboard() {
+            const codeElement = document.getElementById('json-code');
+            const range = document.createRange();
+            range.selectNode(codeElement);
+            window.getSelection().removeAllRanges(); // Clear any existing selections
+            window.getSelection().addRange(range);
+            try {
+                document.execCommand('copy');
+                alert('JSON copied to clipboard!');
+            } catch (err) {
+                alert('Failed to copy JSON.');
+            }
+            window.getSelection().removeAllRanges(); // Clear the selection
+        }
+    </script>
+</body>
+</html>

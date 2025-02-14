@@ -25,6 +25,13 @@ def generate_form(prefilled_data=None):
         <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('url', 'N/A')}</div>
         <input type='url' name='url' id='url' value="{prefilled_data.get('url', '')}" required><br><br>
         """
+        #Project ID
+        form_html += f"""
+        <label for='projid'>Project ID:<span class="info-circle" data-tooltip="Provide the ID for the project. If you do not currently have one it can be added later. The ID will facilitate connecting the programme metadata with other outputs e.g. datasets in OBIS">ⓘ</span></label>
+        <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('projid', 'N/A')}</div>
+        <input type='text' name='projid' id='projid' value="{prefilled_data.get('projid', '')}" ><br><br>
+        """
+        
         # Description
         form_html += f"""
         <label for='description'>Description: <span class="info-circle" data-tooltip="Provide a brief description of the project.">ⓘ</span></label>
@@ -59,8 +66,8 @@ def generate_form(prefilled_data=None):
 
             # License dropdown
             form_html += "<select name='license' id='license' required>"
-            form_html += "<option value='' disabled>Select option</option>"
-            for option_key, option in license_field['options'].items():
+            form_html += "<option value=''>Select option</option>"
+            for option_key, option in license_field['options'].items(): #option_key is necessary to get the key from schema
                 selected = "selected" if option['name'] == license_value else ""
                 form_html += f"<option value='{option['name']}|{option['url']}' {selected}>{option['name']}</option>"
 
@@ -86,7 +93,7 @@ def generate_form(prefilled_data=None):
 
         # Contact Information
         form_html += f"""
-        <label for='contact_name'><h3>Programme Contacts:<span class="required">*</span><span class="info-circle" data-tooltip="Provide contact information for your project.">ⓘ</span></label></h3>
+        <label for='contact_name'><h3>Programme Contacts:<span class="required">*</span><span class="info-circle" data-tooltip="Provide contact information for your project. Can be for individual person or organizational contact information.">ⓘ</span></label></h3>
         <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('contactPoint', {}).get('name', 'N/A')}, {prefilled_data.get('contactPoint', {}).get('email', '')} {prefilled_data.get('contactPoint', {}).get('role', '')} {prefilled_data.get('contactPoint', {}).get('identifier', '')}</div>
         
         """
@@ -94,28 +101,45 @@ def generate_form(prefilled_data=None):
         <div id="contacts-container">
         </div>
         """
-        contacts = prefilled_data.get("contactPoint", [])  # Expecting a list of dicts with name, email, role, id
+        contacts = prefilled_data.get("contactPoint", []) 
         print("contact info:", contacts)
-        #form_html += "<label for='contacts'>Contacts: <span class='info-circle' data-tooltip='Enter contact information for the project.'>ⓘ</span></label>"
         print(f"Contacts data type: {type(contacts)}, content: {contacts}")
+
+        if isinstance(contacts, dict):
+            # Restructure the contacts from a dictionary of lists into a list of dictionaries
+            contact_list = []
+            length = len(contacts.get('name', []))
+            for i in range(length):
+                contact = {
+                    'name': contacts.get('name', [])[i] if i < len(contacts.get('name', [])) else "",
+                    'email': contacts.get('email', [])[i] if i < len(contacts.get('email', [])) else "",
+                    'role': contacts.get('role', [])[i] if i < len(contacts.get('role', [])) else "",
+                    'identifier': contacts.get('identifier', [])[i] if i < len(contacts.get('identifier', [])) else ""
+                }
+                contact_list.append(contact)
+            contacts = contact_list
+        elif isinstance(contacts, list):
+            # If it's already a list, keep it as is
+            pass
+
+        print("Restructured contacts:", contacts)
 
         # Call the JavaScript function for each prefilled contact
         if contacts:
             if isinstance(contacts, dict):  # Single contact
                 contacts = [contacts]  
             for contact in contacts:
-                contact_name = contact.get("name", "")
-                contact_email = contact.get("email", "")
-                contact_role = contact.get("role", "")
-                contact_id = contact.get("id", "")
+                contact_names = contact.get("name", "")
+                contact_emails = contact.get("email", "")
+                contact_roles = contact.get("role", "")
+                contact_ids = contact.get("id", "")
                 form_html += f"""
                 <script>
-                    addContactInput("{contact_name}", "{contact_email}", "{contact_role}", "{contact_id}");
+                    addContactInput("{contact_names}", "{contact_emails}", "{contact_roles}", "{contact_ids}");
                 </script>
                 """
         else:
             form_html += """
-            
             """
 
         # Add the dynamic container for new inputs
@@ -133,9 +157,9 @@ def generate_form(prefilled_data=None):
         <h4><label for='temporal_coverage'>Temporal Coverage:<span class="required">*</span></span><span class="info-circle" data-tooltip="Specify the date range for the project.">ⓘ</span></label></h4>
         <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('temporalCoverage', 'N/A')}</div>
         <b>Start date: </b> <input type='date' name='temporal_coverage_start' id='temporal_coverage_start'
-            value="{prefilled_data.get('temporalCoverage', 'YYYY-MM-DD').split('/')[0] if prefilled_data.get('temporalCoverage') else 'YYYY-MM-DD'}" required><br>
+            value="{prefilled_data.get('temporalCoverage', 'yyyy-MM-dd').split('/')[0] if prefilled_data.get('temporalCoverage') else 'yyyy-MM-dd'}" required><br>
         <b>End date: </b> <input type='date' name='temporal_coverage_end' id='temporal_coverage_end'
-            value="{prefilled_data.get('temporalCoverage', 'YYYY-MM-DD').split('/')[1] if prefilled_data.get('temporalCoverage') else 'YYYY-MM-DD'}" required><br><br>
+            value="{prefilled_data.get('temporalCoverage', '').split('/')[1] if prefilled_data.get('temporalCoverage') else ''}" required><br><br>
         """
         
         # Spatial Coverage
@@ -179,19 +203,29 @@ def generate_form(prefilled_data=None):
         form_html += f"""
         <a>Draw Bounding Area</a>
         <div id="map" style="width: 60%; height: 300px;"></div>
-        <label for="maxy" id="maxy">North (max latitude):</label>
-        <input type="text" id="north" name="north" value="{north}" readonly><br>
-
-        <label for="south" id="miny">South (min latitude):</label>
-        <input type="text" id="south" name="south" value="{south}"readonly><br>
-
-        <label for="east" id="maxx">East (max longitude):</label>
-        <input type="text" id="east" name="east" value="{east}"readonly><br>
-
-        <label for="west" id="minx">West (min longitude):</label>
-        <input type="text" id="west" name="west" value="{west}"readonly><br>
-        <br>
-
+        <div class="grid-container">
+            <div class="grid-item">
+                <label for="maxy" id="maxy">North (max latitude):</label>
+                <input type="text" id="north" name="north" value="{north}"><br>
+            </div>
+            <div class="grid-item">
+                <label for="south" id="miny">South (min latitude):</label>
+                <input type="text" id="south" name="south" value="{south}"><br>
+            </div>
+            <div class="grid-item">
+                <button type="button" onclick="clearBoundingCoordinates()">Clear Bounding Coordinates</button>
+            </div>
+            <div class="grid-item">
+                <label for="east" id="maxx">East (max longitude):</label>
+                <input type="text" id="east" name="east" value="{east}"><br>
+            </div>
+            <div class="grid-item">
+                <label for="west" id="minx">West (min longitude):</label>
+                <input type="text" id="west" name="west" value="{west}"><br>
+            </div>
+            
+        </div>
+        
         """
         
         # EOVs and Variables
@@ -215,6 +249,8 @@ def generate_form(prefilled_data=None):
 
                     # Ensure category_value is a list if it's a string
                     category_value_list = category_value.split(", ") if isinstance(category_value, str) else category_value
+                    # Create a scrollable div for checkboxes
+                    html += f"<div class='checkbox-container' style='max-height: 150px; overflow-y: auto;'>"
 
                     for option_key, option in field["options"].items():
                         # Check if the option name is in the list of previously entered values
@@ -224,7 +260,7 @@ def generate_form(prefilled_data=None):
                             property_id = ", ".join(property_id)
                         option_value = f"{option['name']}|{property_id}"
                         html += f"<input type='checkbox' name='{field_key}' value='{option_value}' {checked}> {option['name']}<br>"
-                    html += "<br>"
+                    html += "</div><br>"
                 elif field.get("type") == "text":  # Text input handling
                     html += f"<label for='{field_key}'>{field.get('name', 'Unknown Field')}</label>"
                     html += f"<input type='text' name='{field_key}' id='{field_key}' value='{value}'>"
@@ -251,62 +287,13 @@ def generate_form(prefilled_data=None):
                 category_value = format_special_category_values(prefilled_data, category_key)
             else:
                 category_value = prefilled_data.get(category_key, "N/A")
-            print("cat value: ", category_value)
+            # print("cat value: ", category_value) #debugging
             # Display previously entered values
             form_html += f"<div class='previous'><strong>Previously entered:</strong> {category_value}</div>"
 
             # Process fields for this category
             fields = category.get("fields", {})
             form_html += process_fields(fields, prefilled_data,category_value)
-
-        # for category_key, category in filtered_categories.items():
-        #     # Add category name and description
-        #     form_html += f"<h3>{category.get('name', 'Unknown Category')}</h3>"
-        #     form_html += f"<p>{category.get('description', '')}</p>"
-
-        #     # Check if there's a previously entered value for this category
-        #     category_value = prefilled_data.get(category_key, "")
-        #     print("Cat value:", category_value)
-
-        #     # Special handling for variableMeasured and measurementTechnique
-        #     if category_key == "variableMeasured" and "variableMeasured" in prefilled_data:
-        #         variable_measured = prefilled_data["variableMeasured"]
-        #         print("vars measured:", variable_measured)
-        #         names = [item["name"] for item in variable_measured if "name" in item]
-        #         category_value = ", ".join(names) if names else "N/A"
-
-        #     elif category_key == "measurementTechnique" and "measurementTechnique" in prefilled_data:
-        #         measurement_techniques = prefilled_data["measurementTechnique"]
-        #         names = [item["name"] for item in measurement_techniques if "name" in item]
-        #         category_value = ", ".join(names) if names else "N/A"
-
-        #     if category_value:
-        #         form_html += f"<div class='previous'><strong>Previously entered:</strong> {category_value}</div>"
-        #     else:
-        #         form_html += "<div class='previous'><strong>Previously entered:</strong> N/A</div>"
-
-        #     # Process fields within the category
-        #     for field_key, field in category.get("fields", {}).items():
-        #         value = prefilled_data.get(field_key, "")
-        #         # Check if the field has options (for dropdown fields with options)
-        #         if "options" in field:
-        #             multiple_attr = "multiple" if field.get("allow_multiple", False) else ""
-        #             form_html += f"<label for='{field_key}'>{field.get('name', 'Unknown Field')}</label>"
-        #             form_html += f"<select name='{field_key}' id='{field_key}' {multiple_attr}>"
-
-        #             for option_key, option in field["options"].items():
-        #                 # Handle propertyID for options (it can be a string or list)
-        #                 selected = "selected" if option['name'] in value else ""
-        #                 property_id = option.get('propertyID', '')
-        #                 if isinstance(property_id, list):
-        #                     property_id = ', '.join(property_id)  # Join list into a string
-        #                 option_value = option['name'] + "|" + property_id
-        #                 form_html += f"<option value='{option_value}' {selected}>{option['name']}</option>"
-        #             form_html += "</select><br><br>"
-
-        #         elif field.get("type") == "text":
-        #             form_html += f"<label for='{field_key}'>{field.get('name', 'Unknown Field')}</label>"
-        #             form_html += f"<input type='text' name='{field_key}' id='{field_key}' value='{value}'><br><br>"
 
         # SOP section
         sops= prefilled_data.get("measurementTechnique", [])

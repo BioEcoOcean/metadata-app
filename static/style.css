@@ -11,9 +11,9 @@ body {
     align-items: center;  /* Vertically aligns logos */
 }
 button{
-    background-color: rgb(113, 168, 219);
-    color: #e6e1e1;  /* Dark text color */
-    font-size: 20px;  /* Make text bigger */
+    background-color: rgb(74 102 127);
+    color: #f1ecec; 
+    font-size: 1.2rem; 
     padding: 12px 24px;  /* Add padding for bigger button size */
     border: none; 
     border-radius: 50px; 
@@ -21,38 +21,60 @@ button{
     transition: background-color 0.3s ease;  /* Smooth transition for hover effect */
 }
 button:hover {
-    background-color: #87CEEB;  /* Slightly darker blue on hover */
+    background-color: #6196ac;  
 }
 button:focus {
     outline: none;  /* Removes the outline on focus (optional, depends on your preference) */
 }
 button:active {
-    background-color: #B0E0E6;  /* Even darker blue on click */
+    background-color: #B0E0E6;
+}
+button.back-button{
+    background-color: rgb(201, 119, 52);
+    color: #f1ecec;  /* Dark text color */
+    font-size: 1.2rem;
+    padding: 10px 14px;  /* Add padding for bigger button size */
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer;  /* Change cursor to pointer when hovering */
+    transition: background-color 0.3s ease;  /* Smooth transition for hover effect */
+}
+.back-button:hover {
+    background-color: #a84f06;
+}
+button.copy-button{
+    background-color: rgb(204, 204, 204);
+    color: #4e4c4c;  /* Dark text color */
+    font-size: 1rem;
+    padding: 8px 12px;  /* Add padding for bigger button size */
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer;  
+    transition: background-color 0.3s ease;
+    margin: 10px;     
+}
+.copy-button:hover {
+    background-color: #999999;  /* Slightly darker blue on hover */
 }
 a:link {
-    color: rgb(43, 154, 173);
+    color: rgb(4 81 95);
     background-color: transparent;
     text-decoration: underline;
 }
 a:link.button {
-    color: rgb(43, 154, 173);
+    color: rgb(255, 255, 255);
+    background-color: transparent;
+    text-decoration: none;
+}
+a:visited.button {
+    color: rgb(255, 255, 255); /* Ensure visited button link color remains the same */
     background-color: transparent;
     text-decoration: none;
 }
 a:visited {
-    color: rgb(70, 38, 121);
+    color: rgb(146, 114, 197);
     background-color: transparent;
     text-decoration: none;
-}
-button.button-back{
-    background-color: rgb(201, 119, 52);
-    color: #e6e1e1;  /* Dark text color */
-    font-size: 20px;  /* Make text bigger */
-    padding: 12px 24px;  /* Add padding for bigger button size */
-    border: none; 
-    border-radius: 50px; 
-    cursor: pointer;  /* Change cursor to pointer when hovering */
-    transition: background-color 0.3s ease;  /* Smooth transition for hover effect */
 }
 table.projects {
     width: 90%;
@@ -80,10 +102,31 @@ table.projects thead {
 button.logins{
     background-color: rgb(20, 14, 18);
     color: #e6e1e1;  
-    font-size: 20px;  /* Make text bigger */
-    padding: 10px 20px;  /* Add padding for bigger button size */
+    font-size: 18px;  /* Make text bigger */
+    padding: 9px 18px;  /* Add padding for bigger button size */
     border: none; 
-    border-radius: 50px; 
-    cursor: pointer;  /* Change cursor to pointer when hovering */
-    transition: background-color 0.3s ease;  /* Smooth transition for hover effect */
+    border-radius: 45px; 
+    cursor: pointer;  
+    transition: background-color 0.3s ease; 
+}
+.logins:hover {
+    background-color: #464545;
+}
+pre{
+    width: 80%;
+}
+pre code.language-json {
+    background-color: #2d2d2d; 
+    color: #f8f8f2; 
+    padding: 10px;
+    border-radius: 8px;
+    overflow: auto;
+    font-size: 20px;
+    line-height: 1.5;
+}
+.code-container {
+    background-color: #2d2d2d; 
+    text-align: right;
+    align-items: flex-start;
+    width: 80%;
 }

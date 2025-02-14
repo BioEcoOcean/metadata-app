@@ -52,7 +52,7 @@
         }
     </script>
 </head>
-<button class="back-button"><a href="{{ url_for('home') }}">Back to home</a></button>
+<button class="back-button"><a href="{{ url_for('home') }}" class="button">Back to home</a></button>
 
 <body>
     <h1>Update Existing Metadata</h1>
@@ -81,10 +81,18 @@
                 <button type='submit' class="submit-button" name='action' value='update_github' id="update_github">Submit Updated Entry</button>
                 <button type='submit' class="submit-button" name='action' value='print_json' id="print-json-btn">Print JSON</button>
             </form>
+            
         {% else %}
             <p>No form available. Please select a valid issue to update.</p>
         {% endif %}
  
     </div>
+    <button class="back-button" id="scroll-to-top">To Top</button>
+    <script>
+        document.getElementById("scroll-to-top").addEventListener("click", function(event) {
+            event.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
 </body>
 </html>

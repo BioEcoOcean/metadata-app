@@ -3,29 +3,41 @@ body {
     line-height: 1.6;
     background-color: #d7ebf8;
 }
-
+a{
+    font-weight: normal;
+}
 h1 {
     font-size: 2rem;
     color: #36768f;
 }
 h2 {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     margin-top: 1em;
     color: #275e9c;
 }
 h3{
     font-size: 1.5rem;
     margin-top: 1em;
+    margin-bottom: 0em;
     color: rgb(73, 142, 173);
+}
+h4{
+    font-size: 1.25rem;
+    margin-top: 0em;
+    margin-bottom: 0em;
+    color: rgb(54, 104, 128);
 }
 p {
     font-size: 1rem;
     color: #000000;
+    font-weight: normal;
+    font-size: large;
 }
 label {
     display: block;
     margin-bottom: 0.5em;
     font-weight: bold;
+    color: #0e243b;
 }
 .form-dropdown {
     width: 100%;
@@ -37,31 +49,53 @@ label {
 .form-group {
     margin-bottom: 1em;
 }
-
+button{
+    background-color: rgb(51, 82, 110);
+    color: #fffefe; 
+    font-size: 16px; 
+    padding: 5px 10px;  /* Add padding for bigger button size */
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    transition: background-color 0.3s ease;  
+}
+button:hover {
+    background-color: #4b778a;  
+}
 button.submit-button {
-    background-color: #007bff;
+    background-color: #0e5394;
     color: white;
     padding: 0.75em;
-    font-size: 1rem;
+    font-size: 1.15rem;
     border: none;
     border-radius: 5px;
     cursor: pointer;
 }
 button.back-button{
-    background-color: rgb(201, 119, 52);
-    color: #e6e1e1;  /* Dark text color */
+    background-color: rgb(201 106 9);
+    color: #e6e1e1; 
     font-size: 1rem;
-    padding: 10px 14px;  /* Add padding for bigger button size */
+    padding: 10px 14px;
     border: none; 
     border-radius: 5px; 
-    cursor: pointer;  /* Change cursor to pointer when hovering */
-    transition: background-color 0.3s ease;  /* Smooth transition for hover effect */
+    cursor: pointer; 
+    transition: background-color 0.3s ease;  
+}
+a:link.button {
+    color: rgb(255, 255, 255);
+    background-color: transparent;
+    text-decoration: none;
+}
+a:visited.button {
+    color: rgb(255, 255, 255); /* Ensure visited button link color remains the same */
+    background-color: transparent;
+    text-decoration: none;
 }
 .submit-button:hover {
-    background-color: #0056b3;
+    background-color: #0b396b;
 }
 .back-button:hover {
-    background-color: #0056b3;
+    background-color: #a84f06;
 }
 .container {
     max-width: 800px;
@@ -81,7 +115,7 @@ button.back-button{
     border-radius: 4px;
 }
 select{
-    width: 60%;
+    width: 50%;
 }
 input{
     width: 50%;
@@ -90,7 +124,16 @@ input[type="date"]{
     width: 30%;
 }
 input[type="checkbox"]{
-    width: 5%;
+    width: 20px;
+    transform: scale(1.4);
+}
+#spatial_coverage_name{
+    width: 15%;
+    display: inline-block;
+}
+#spatial_coverage_identifier{
+    width: 20%;
+    display: inline-block;
 }
 textarea{
     width: 50%;
@@ -147,11 +190,11 @@ textarea{
   }
   
   /* Tooltip styling */
-  .info-circle::after {
+.info-circle::after {
     content: attr(data-tooltip); /* Use the data-tooltip attribute */
     position: absolute;
-    bottom: 120%; /* Position above the info circle */
-    left: 50%;
+    bottom: 10%; /* Position above the info circle */
+    left: 900%;
     transform: translateX(-50%);
     background-color: #333;
     color: #fff;
@@ -166,9 +209,34 @@ textarea{
     z-index: 100;
   }
   
-  /* Show tooltip on hover */
-  .info-circle:hover::after {
+.info-circle:hover::after {  /* Show tooltip on hover */
     opacity: 1;
     visibility: visible;
     text-wrap:inherit;
+    width: max-content; 
+    max-width: 200px
   }
+  /* Container with 2 rows and 2 columns */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 2 columns */
+    grid-template-rows: repeat(2, 1fr);    /* 2 rows */
+    width: 50%; 
+    grid-template-areas: 
+        "north east ."
+        "south west button"; 
+    align-items: center;   
+}
+.grid-item {
+    text-align: center;
+    padding: 1px;
+    vertical-align: middle;
+}
+.checkbox-container {
+    max-height: 150px;
+    overflow-y: auto;
+    padding-right: 10px;  /* Prevent scrollbar overlap */
+    border: 1px solid #8eb7cb54; /* Optional: Add a border to the container */
+    background-color: #8eb7cb18; /* Optional: Add background color */
+    width: 500px;
+}

@@ -6,17 +6,16 @@ def get_nested_value(data, field_path, default=None):
     keys = field_path if isinstance(field_path, list) else field_path.split(".")
     for key in keys:
         if isinstance(data, list):
-            # If the current level is a list, try to access the first element
-            if data and isinstance(data[0], dict):
-                data = data[0].get(key, default)
-            else:
-                # List doesn't contain dicts or is empty
+            # If the current level is a list, try to get a list of values for the key
+            # Extract all items in the list that are dictionaries and have the key
+            data = [item.get(key, default) for item in data if isinstance(item, dict)]
+            if not data:  # If no dictionaries with the key are found, return default
                 return default
         elif isinstance(data, dict):
             # If the current level is a dict, get the value for the key
             data = data.get(key, default)
         else:
-            # Key path cannot be resolved
+            # Key path cannot be resolved if data is not a dict or list
             return default
     return data
 

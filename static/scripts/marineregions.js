@@ -32,9 +32,11 @@ document.getElementById("search_regions").addEventListener("input", function () 
 
                     // Add click event to the row
                     row.addEventListener("click", function () {
+                        // Construct the full URL for MRGID
+                        const mrgidUrl = `http://marineregions.org/mrgid/${region.MRGID}`;
                         // When the user clicks the row, populate the name and identifier
                         document.getElementById("spatial_coverage_name").value = region.preferredGazetteerName;
-                        document.getElementById("spatial_coverage_identifier").value = region.MRGID;
+                        document.getElementById("spatial_coverage_identifier").value = mrgidUrl;
                         table.style.display = "none";  // Hide the table after selection
                     });
 
