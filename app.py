@@ -307,7 +307,7 @@ def update_entry():
 
                 print("Parsed JSON:", issue_data_json)  # Debug: Check the parsed JSON
 
-                # Map the GitHub issue data to your schema format
+                # Map the GitHub issue data to schema format
                 schema_entry = map_form_to_schema(issue_data_json)
 
                 # Generate the form with the mapped data

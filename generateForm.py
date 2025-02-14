@@ -68,6 +68,8 @@ def generate_form(prefilled_data=None):
             form_html += "<select name='license' id='license' required>"
             form_html += "<option value=''>Select option</option>"
             for option_key, option in license_field['options'].items(): #option_key is necessary to get the key from schema
+                form_html += "<option value=''>Select option</option>"
+            for option_key, option in license_field['options'].items(): #option_key is necessary to get the key from schema
                 selected = "selected" if option['name'] == license_value else ""
                 form_html += f"<option value='{option['name']}|{option['url']}' {selected}>{option['name']}</option>"
 
