@@ -25,6 +25,23 @@ function addKeywordInput() {
     // Append the new input to the container
     document.getElementById("keywords-container").appendChild(newInputContainer);
 }
+function addOutputInput() {
+    const newInputContainer = document.createElement("div");
+    newInputContainer.className = "outputs-container";
+    newInputContainer.style.marginTop = "5px";  // Add some spacing for better visuals
+    
+    const newInput = document.createElement("input");
+    newInput.type = "text";
+    newInput.name = "outputs";  // Keep name="keywords" so Flask collects them as a list
+    newInput.className = "outputs-input";
+    newInput.placeholder = "Enter an output";
+    newInput.style.marginTop = "5px";  // Add some spacing for better visuals  
+    
+    newInputContainer.appendChild(newInput);
+    addRemoveButton(newInputContainer);
+    // Append the new input to the container
+    document.getElementById("outputs-container").appendChild(newInputContainer);
+}
 function addSOPInput() {
     const newInputContainer = document.createElement("div");
     newInputContainer.className = "sops-input-container";
@@ -35,9 +52,30 @@ function addSOPInput() {
     newInput.name = "sops";  
     newInput.className = "sops-input"; newInput.placeholder = "Enter a link to an SOP";
     newInput.style.marginTop = "5px";
-    // Append the new input to the container
+    
+    // Create the checkbox for OBPs
+    const checkboxContainer = document.createElement("div");
+    checkboxContainer.style.marginTop = "5px";
+    checkboxContainer.style.display = "flex"; // Use flexbox to align items on the same line
+    checkboxContainer.style.alignItems = "center"; // Vertically align the checkbox and label
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.name = "sop_obps";
+    checkbox.value = "yes";
+    checkbox.id = `sop_obps_${Date.now()}`; // Unique ID for the checkbox
+
+    const checkboxLabel = document.createElement("label");
+    checkboxLabel.htmlFor = checkbox.id;
+    checkboxLabel.textContent = "Is this SOP included in the Ocean Best Practices (OBPs)?";
+    checkboxLabel.style.marginLeft = "5px"; // Add some spacing between the checkbox and the label
+
+    // Append the checkbox and label to the container
+    checkboxContainer.appendChild(checkbox);
+    checkboxContainer.appendChild(checkboxLabel);
 
     newInputContainer.appendChild(newInput);
+    newInputContainer.appendChild(checkboxContainer);
     addRemoveButton(newInputContainer);
 
     document.getElementById("sops-container").appendChild(newInputContainer);
@@ -112,4 +150,53 @@ function addContactInput(name = "", email = "", role = "", id = "") {
         // Append the contact container to the main container
         document.getElementById("contacts-container").appendChild(contactContainer);
     }
+
+    function addFunders(name = "", email = "", role = "", id = "") {
+        // Create a new container for the contact pair
+        const funderContainer = document.createElement("div");
+        funderContainer.className = "funder-container";
+        funderContainer.style.marginTop = "10px"; // Add spacing between pairs
     
+        // Create the input for the funder organization name
+        const fundingOrg = document.createElement("input");
+        fundingOrg.type = "text";
+        fundingOrg.name = "funder_name";  // Flask will collect these as a list
+        fundingOrg.className = "funder-name";
+        fundingOrg.placeholder = "Enter name of funding organization";
+        fundingOrg.value = name;
+        fundingOrg.style.marginRight = "10px"; // Add spacing between the two inputs
+        
+        // Create the input for the funder url
+        const fundingURL = document.createElement("input");
+        fundingURL.type = "url";
+        fundingURL.name = "funder_url";  // Flask will collect these as a list
+        fundingURL.className = "funder-url";
+        fundingURL.placeholder = "Enter URL of funding organisation";
+        
+        fundingURL.style.marginRight = "10px";
+        
+        // Create the input for the funder award
+        const awardInput = document.createElement("input");
+        awardInput.type = "text";
+        awardInput.name = "funding_name";  // Flask will collect these as a list
+        awardInput.className = "funding-name";
+        awardInput.placeholder = "Enter name of the funding award";
+        awardInput.style.marginRight = "10px";
+        
+        // Create the input for the funder identifer
+        const identiferFunding = document.createElement("input");
+        identiferFunding.type = "text";
+        identiferFunding.name = "funding_identifier";  // Flask will collect these as a list
+        identiferFunding.className = "funding-identifier";
+        identiferFunding.placeholder = "Enter the identifier of the funding award";
+        identiferFunding.value = id; 
+    
+        // Append both inputs to the contact container
+        funderContainer.appendChild(fundingOrg);addRemoveButton(funderContainer);
+        funderContainer.appendChild(fundingURL);
+        funderContainer.appendChild(awardInput);
+        funderContainer.appendChild(identiferFunding);
+    
+        // Append the contact container to the main container
+        document.getElementById("funder-container").appendChild(funderContainer);
+    }

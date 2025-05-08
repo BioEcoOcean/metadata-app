@@ -49,3 +49,8 @@ document.getElementById("search_regions").addEventListener("input", function () 
         document.getElementById("regions_table").style.display = "none";
     }
 });
+
+function clearMarineRegions() {
+    document.getElementById("spatial_coverage_name").value = '';
+    document.getElementById("spatial_coverage_identifier").value = '';
+}

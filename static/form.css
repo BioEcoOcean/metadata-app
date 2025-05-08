@@ -54,6 +54,7 @@ button{
     color: #fffefe; 
     font-size: 16px; 
     padding: 5px 10px;  /* Add padding for bigger button size */
+    margin: 2px;
     border: none; 
     border-radius: 5px; 
     cursor: pointer; 
@@ -144,6 +145,7 @@ textarea{
     border-collapse: collapse;
     table-layout: fixed; 
     overflow: scroll;
+    height: 50vh
 }
 #regions_table th, #regions_table td {
     padding: 8px;
@@ -219,8 +221,8 @@ textarea{
   /* Container with 2 rows and 2 columns */
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 2 columns */
-    grid-template-rows: repeat(2, 1fr);    /* 2 rows */
+    grid-template-columns: repeat(3, 1fr); /* # columns */
+    grid-template-rows: repeat(2, 1fr);    /* # rows */
     width: 50%; 
     grid-template-areas: 
         "north east ."
@@ -233,7 +235,7 @@ textarea{
     vertical-align: middle;
 }
 .checkbox-container {
-    max-height: 150px;
+    max-height: 50vh;
     overflow-y: auto;
     padding-right: 10px;  /* Prevent scrollbar overlap */
     border: 1px solid #8eb7cb54; /* Optional: Add a border to the container */

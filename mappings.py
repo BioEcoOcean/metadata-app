@@ -22,5 +22,7 @@ field_mapping = {
     "north": ("spatialCoverage.geo.box", str),
     "south": ("spatialCoverage.geo.box", str),
     "east": ("spatialCoverage.geo.box", str),
-    "west": ("spatialCoverage.geo.box", str)
+    "west": ("spatialCoverage.geo.box", str),
+    "projid": ("identifier", str),
+    "outputs": ("isRelatedTo", list)
 }

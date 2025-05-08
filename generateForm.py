@@ -27,11 +27,11 @@ def generate_form(prefilled_data=None):
         """
         #Project ID
         form_html += f"""
-        <label for='projid'>Project ID:<span class="info-circle" data-tooltip="Provide the ID for the project. If you do not currently have one it can be added later. The ID will facilitate connecting the programme metadata with other outputs e.g. datasets in OBIS">ⓘ</span></label>
-        <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('projid', 'N/A')}</div>
-        <input type='text' name='projid' id='projid' value="{prefilled_data.get('projid', '')}" ><br><br>
+        <label for='projid'>Data producer ID:<span class="info-circle" data-tooltip="Provide the ID for the entity producing EOV data, e.g. project, institution, programme, etc. If you do not currently have one it can be added later. The ID will facilitate connecting the data producer metadata with other outputs e.g. datasets in OBIS">ⓘ</span></label>
+        <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('pid', 'N/A')}</div>
+        <input type='text' name='projid' id='projid' value="{prefilled_data.get('pid', '')}" ><br><br>
         """
-        
+
         # Description
         form_html += f"""
         <label for='description'>Description: <span class="info-circle" data-tooltip="Provide a brief description of the project.">ⓘ</span></label>
@@ -66,13 +66,11 @@ def generate_form(prefilled_data=None):
 
             # License dropdown
             form_html += "<select name='license' id='license' required>"
-            form_html += "<option value=''>Select option</option>"
-            for option_key, option in license_field['options'].items(): #option_key is necessary to get the key from schema
-                form_html += "<option value=''>Select option</option>"
+            form_html += "<option value='' selected>Select option</option>"
+
             for option_key, option in license_field['options'].items(): #option_key is necessary to get the key from schema
                 selected = "selected" if option['name'] == license_value else ""
                 form_html += f"<option value='{option['name']}|{option['url']}' {selected}>{option['name']}</option>"
-
             form_html += "</select><br><br>"
         else:
             # Handle the case where 'license' is missing
@@ -97,13 +95,13 @@ def generate_form(prefilled_data=None):
         form_html += f"""
         <label for='contact_name'><h3>Programme Contacts:<span class="required">*</span><span class="info-circle" data-tooltip="Provide contact information for your project. Can be for individual person or organizational contact information.">ⓘ</span></label></h3>
         <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('contactPoint', {}).get('name', 'N/A')}, {prefilled_data.get('contactPoint', {}).get('email', '')} {prefilled_data.get('contactPoint', {}).get('role', '')} {prefilled_data.get('contactPoint', {}).get('identifier', '')}</div>
-        
+
         """
         form_html += f"""
         <div id="contacts-container">
         </div>
         """
-        contacts = prefilled_data.get("contactPoint", []) 
+        contacts = prefilled_data.get("contactPoint", [])
         print("contact info:", contacts)
         print(f"Contacts data type: {type(contacts)}, content: {contacts}")
 
@@ -129,7 +127,7 @@ def generate_form(prefilled_data=None):
         # Call the JavaScript function for each prefilled contact
         if contacts:
             if isinstance(contacts, dict):  # Single contact
-                contacts = [contacts]  
+                contacts = [contacts]
             for contact in contacts:
                 contact_names = contact.get("name", "")
                 contact_emails = contact.get("email", "")
@@ -150,20 +148,19 @@ def generate_form(prefilled_data=None):
         <button type="button" onclick="addContactInput()">Add Contact</button>
         <br><br>
         """
-        
-        
+
         #Coverage
         form_html += "<h3>Coverage</h3>"
         #Temporal coverage
         form_html += f"""
-        <h4><label for='temporal_coverage'>Temporal Coverage:<span class="required">*</span></span><span class="info-circle" data-tooltip="Specify the date range for the project.">ⓘ</span></label></h4>
+        <h4><label for='temporal_coverage'>Temporal Coverage:<span class="info-circle" data-tooltip="Specify the date range for the project.">ⓘ</span></label></h4>
         <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('temporalCoverage', 'N/A')}</div>
         <b>Start date: </b> <input type='date' name='temporal_coverage_start' id='temporal_coverage_start'
-            value="{prefilled_data.get('temporalCoverage', 'yyyy-MM-dd').split('/')[0] if prefilled_data.get('temporalCoverage') else 'yyyy-MM-dd'}" required><br>
+            value="{prefilled_data.get('temporalCoverage', '').split('/')[0] if prefilled_data.get('temporalCoverage') else ''}" ><br>
         <b>End date: </b> <input type='date' name='temporal_coverage_end' id='temporal_coverage_end'
-            value="{prefilled_data.get('temporalCoverage', '').split('/')[1] if prefilled_data.get('temporalCoverage') else ''}" required><br><br>
+            value="{prefilled_data.get('temporalCoverage', '').split('/')[1] if prefilled_data.get('temporalCoverage') else ''}" ><br><br>
         """
-        
+
         # Spatial Coverage
         regional_id_str = 'MRGID: '
         form_html += f"""
@@ -188,9 +185,11 @@ def generate_form(prefilled_data=None):
         </table>
         <a><i>Auto-populated fields:</i></a><br>
         Name: <input type="spatial" name="spatial_coverage_name" id="spatial_coverage_name" value="{prefilled_data.get('spatialCoverage', {}).get("name", '')}" readonly>
-        MRGID: <input type="text" name="spatial_coverage_identifier" id="spatial_coverage_identifier" value="{prefilled_data.get('spatialCoverage', {}).get("identifier", '')}" readonly><br><br>
+        MRGID: <input type="text" name="spatial_coverage_identifier" id="spatial_coverage_identifier" value="{prefilled_data.get('spatialCoverage', {}).get("identifier", '')}" readonly>
+        <button type="button" onclick="clearMarineRegions()">Clear Location</button>
+        <br><br>
         """
-        
+
         boundingcoords = {prefilled_data.get('spatialCoverage', {}).get("geo", {}).get("box", '')}
         if isinstance(boundingcoords, set):
             # Extract the string from the set
@@ -201,7 +200,7 @@ def generate_form(prefilled_data=None):
         west = coordinates[1] if len(coordinates) > 1 else ""
         north = coordinates[2] if len(coordinates) > 2 else ""
         east = coordinates[3] if len(coordinates) > 3 else ""
-        
+
         form_html += f"""
         <a>Draw Bounding Area</a>
         <div id="map" style="width: 60%; height: 300px;"></div>
@@ -225,11 +224,11 @@ def generate_form(prefilled_data=None):
                 <label for="west" id="minx">West (min longitude):</label>
                 <input type="text" id="west" name="west" value="{west}"><br>
             </div>
-            
+
         </div>
-        
+
         """
-        
+
         # EOVs and Variables
         def format_special_category_values(prefilled_data, category_key):
             """
@@ -309,29 +308,95 @@ def generate_form(prefilled_data=None):
         form_html += "<div id='sops-container'>"
         for sop_url in sops_urls:
             form_html += f'<input type="text" name="sops" class="sops-input" value="{sop_url}" placeholder="Enter a link to an SOP"><br>'
+        form_html += "</div><br>"
+        form_html += '<button type="button" onclick="addSOPInput()">Add a SOP link</button><br><br>'
+
+        #Ouputs section
+        outputs = prefilled_data.get("outputs", [])
+        outputs_display = ", ".join(outputs) if outputs else "N/A"
+        form_html += "<label for='outputs'><h2>Outputs: <span class='info-circle' data-tooltip='Enter relevant outputs that are related to your entry.'>ⓘ</span></h2></label>"
+        form_html += "<p>Please optionally provide the link to any relevant outputs.</p>"
+        form_html += f"""
+        <div class='previous'><strong>Previously entered: </strong>{outputs_display}</div>
+        """
+        form_html += "<div id='outputs-container'>"
+        for outputs in outputs:
+            form_html += f'<input type="text" name="outputs" class="outputs-input" value="{outputs}" placeholder="Enter the link of an output"><br>'
         form_html += "</div>"
-        form_html += '<button type="button" onclick="addSOPInput()">Add a SOP link</button>'
+        form_html += '<button type="button" onclick="addOutputInput()">Add an Output</button><br>'
 
         # Funding section
-        form_html += "<h2>Funding Information</h2>"
-        form_html += "<div>"
+        # form_html += "<h2>Funding Information</h2>"
+        # form_html += "<div>"
+        # form_html += f"""
+        #     <label for="funder_name">Funding Organization Name: <span class='info-circle' data-tooltip='Name of funding organization.'>ⓘ</span></label>
+        #     <div class="previous"><strong>Previously entered:</strong> {prefilled_data.get('funding',{}).get("funder",{}).get("name", 'N/A')}</div>
+        #     <input type="text" id="funder_name" name="funder_name" placeholder="Enter funder name" value="{prefilled_data.get('funding',{}).get("funder",{}).get("name", '')}"><br><br>
+
+        #     <label for="funder_url">Funding Organization URL: <span class='info-circle' data-tooltip='URL of funding organization.'>ⓘ</span></label>
+        #     <div class="previous"><strong>Previously entered:</strong> {prefilled_data.get('funding',{}).get("funder",{}).get('url', 'N/A')}</div>
+        #     <input type="url" id="funder_url" name="funder_url" placeholder="Enter funder URL" value="{prefilled_data.get('funding',{}).get("funder",{}).get('url', '')}"><br><br>
+
+        #     <label for="funding_name">Name of Funding Award: <span class='info-circle' data-tooltip='Name of the funding or award received, e.g. Horizon Europe'>ⓘ</span></label>
+        #     <div class="previous"><strong>Previously entered:</strong> {prefilled_data.get('funding',{}).get('name', 'N/A')}</div>
+        #     <input type="text" id="funding_name" name="funding_name" placeholder="Enter funding name" value="{prefilled_data.get('funding',{}).get('name', '')}"><br><br>
+
+        #     <label for="funding_identifier">Funding Identifier Number: <span class='info-circle' data-tooltip='The identifier associated with the funding, e.g. grant number.'>ⓘ</span></label>
+        #     <div class="previous"><strong>Previously entered:</strong> {prefilled_data.get('funding',{}).get('identifier', 'N/A')}</div>
+        #     <input type="text" id="funding_identifier" name="funding_identifier" placeholder="Enter funding identifier" value="{prefilled_data.get('funding',{}).get('identifier', '')}"><br>
+        # """
+        # form_html += "</div>"
+        # form_html += "<br>"
+
+        # Funding section
+        funders = prefilled_data.get("funding", [])
+        # Extract funder details
+        funders_display = ", ".join(
+            [f"{funder.get('name', 'N/A')} ({funder.get('url', 'N/A')})" for funder in funders if isinstance(funder, dict)]
+        ) if funders else "N/A"
+
+        form_html += "<label for='funder-container'><h2>Funding Information <span class='info-circle' data-tooltip='Provide information about funding organizations and awards.'>ⓘ</span></h2></label>"
+        form_html += "<p>Please provide information about the funding that supports your entry.</p>"
         form_html += f"""
-            <label for="funder_name">Funding Organization Name: <span class='info-circle' data-tooltip='Name of funding organization.'>ⓘ</span></label>
-            <div class="previous"><strong>Previously entered:</strong> {prefilled_data.get('funding',{}).get("funder",{}).get("name", 'N/A')}</div>
-            <input type="text" id="funder_name" name="funder_name" placeholder="Enter funder name" value="{prefilled_data.get('funding',{}).get("funder",{}).get("name", '')}"><br><br>
-
-            <label for="funder_url">Funding Organization URL: <span class='info-circle' data-tooltip='URL of funding organization.'>ⓘ</span></label>
-            <div class="previous"><strong>Previously entered:</strong> {prefilled_data.get('funding',{}).get("funder",{}).get('url', 'N/A')}</div>
-            <input type="url" id="funder_url" name="funder_url" placeholder="Enter funder URL" value="{prefilled_data.get('funding',{}).get("funder",{}).get('url', '')}"><br><br>
-
-            <label for="funding_name">Name of Funding Award: <span class='info-circle' data-tooltip='Name of the funding or award received, e.g. Horizon Europe'>ⓘ</span></label>
-            <div class="previous"><strong>Previously entered:</strong> {prefilled_data.get('funding',{}).get('name', 'N/A')}</div>
-            <input type="text" id="funding_name" name="funding_name" placeholder="Enter funding name" value="{prefilled_data.get('funding',{}).get('name', '')}"><br><br>
-
-            <label for="funding_identifier">Funding Identifier Number: <span class='info-circle' data-tooltip='The identifier associated with the funding, e.g. grant number.'>ⓘ</span></label>
-            <div class="previous"><strong>Previously entered:</strong> {prefilled_data.get('funding',{}).get('identifier', 'N/A')}</div>
-            <input type="text" id="funding_identifier" name="funding_identifier" placeholder="Enter funding identifier" value="{prefilled_data.get('funding',{}).get('identifier', '')}"><br>
+        <div class="previous"><strong>Previously entered:</strong> {funders_display}</div>
         """
+        form_html += "<div id='funder-container'>"
+        # Loop through prefilled data and add existing funding inputs
+        for funder in funders:
+            funder_name = funder.get("funder",{}).get("name", 'N/A')
+            funder_url = funder.get("funder",{}).get('url', 'N/A')
+            funding_name = funder.get('name', 'N/A')  # Assuming awards are nested
+            funding_identifier = funder.get('identifier', 'N/A')
+            form_html += f"""
+            <div class="funder-container">
+                <input type="text" name="funder_name" class="funder-name" value="{funder_name}" placeholder="Enter name of funding organization">
+                <input type="url" name="funder_url" class="funder-url" value="{funder_url}" placeholder="Enter URL of funder" >
+                <input type="text" name="funding_name" class="funding-name" value="{funding_name}" placeholder="Enter name of the funding award" >
+                Funding Identifier Number:
+                <input type="text" name="funding_identifier" class="funding-identifier" value="{funding_identifier}" placeholder="Enter the identifier of the funding award">
+                <button type="button" class="remove-funder-button" onclick="this.parentElement.remove()">Remove</button>
+            </div>
+            """
         form_html += "</div>"
-        form_html += "<br>"
+        form_html += '<button type="button" onclick="addFunders()">Add a Funder</button><br><br>'
+
+        form_html += f"""
+        <div>
+            <h2>Search for Keywords in Vocabulary Collections</h2>
+            This is a work in progress. Full functionality coming soon!
+            Type in the box below to search for a keyword. Searches query both The Environment Ontology (ENVO) and the BODC NERC Vocabulary Server.<br>
+           <input type="text" id="keyword-search" placeholder="Enter keyword to search" onkeypress="if(event.key === 'Enter') {{ event.preventDefault(); searchKeywords(); }}">
+            <button type="button" onclick="searchKeywords()">Search</button>
+            <div class="previous"><strong>Previously entered:</strong> </div>
+            <div id="keyword-results" style="margin-top: 10px; max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;"></div>
+                <div>
+                    <h3>Selected Keywords</h3>
+                    <div id="selected-keywords"></div>
+                </div>
+        </div>
+
+        <!-- Hidden inputs for storing selected keywords for form submission -->
+            <div id="selected-keywords-hidden" ></div>
+        <br><br>
+        """
         return form_html

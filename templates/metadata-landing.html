@@ -1,0 +1,38 @@
+{% extends "header.html" %}
+
+{% block title %}EOV Data Tools{% endblock %}
+
+{% block content %}
+
+<h1>Submit EOV Metadata</h1>
+    <p>This application is designed to streamline the creation of metadata JSON-LD files and sitemaps for Essential Ocean Variables (EOV) "data producers", e.g. programmes,
+        projects, and/or institutions. It 
+        facilitates seamless integration with the GOOS BioEco Portal and the Ocean Data and Information System (ODIS). 
+        Generated JSON-LD files are submitted to the BioEcoOcean GitHub repository as issues, when entries are updated, a date is added in a comment.</p>
+    <p>You must have a GitHub account to use this tool as submissions are sent to the GitHub repository.</p>
+    <!-- <p>Confirm your visibility in ODIS by clicking here and searching for your data producer.</p> -->
+        
+    <h2>Submit data producer metadata:</h2>
+    <button><a href="{{ url_for('handle_form_submission') }}" class="button">New entry</a></button>
+    <button><a href="{{ url_for('update_entry') }}" class="button">Update an entry</a></button>
+
+    <h2>Data Producers Already Submitted</h2>
+    <table class="projects">
+        <thead>
+            <tr>
+                <th>Programme Name</th>
+                <th>Link</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for project in projects %}
+            <tr>
+                <td>{{ project.name }}</td>
+                <td><a href="{{ project.project_link }}" target="_blank">{{ project.project_link }}</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+{% endblock %}

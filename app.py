@@ -95,6 +95,40 @@ def github_authorized():
     #print("User Info & token Saved:", session["user"], session["GITHUB_TOKEN"], flush=True)
     return redirect(url_for('home'))
 
+@app.route("/data")
+def data():
+    return render_template("data.html")
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+@app.route("/dataproducer")
+def dataproducer():
+    user = session["user"]
+    if not user:
+        # Fetch user info from GitHub if not in session
+        resp = github.get("/user")
+        if not resp.ok:
+            return redirect(url_for('index'))
+        
+        user_info = resp.json()
+        session["user"] = user_info
+        print("User Info Fetched and Saved:", session["user"], flush=True)
+    
+    # Retrieve the token from the session
+    github_token = session.get("GITHUB_TOKEN")
+    if not github_token:
+        github_token = session.get("github_oauth_token", {}).get("access_token")
+        if github_token:
+            session["GITHUB_TOKEN"] = github_token
+    print("GITHUB_TOKEN from session:", github_token, flush=True)
+
+    projects = cache.get('projects')
+    if projects is None:
+        projects = fetch_projects_from_github()
+        cache.set('projects', projects, timeout=60*60)  # Cache for 1 hour
+    return render_template("metadata-landing.html", user=session.get("user"), projects=projects)
 
 @app.route("/home")
 def home():
@@ -125,12 +159,9 @@ def home():
             session["GITHUB_TOKEN"] = github_token
     print("GITHUB_TOKEN from session:", github_token, flush=True)
 
-    projects = cache.get('projects')
-    if projects is None:
-        projects = fetch_projects_from_github()
-        cache.set('projects', projects, timeout=60*60)  # Cache for 1 hour
     
-    return render_template("home.html", user=session.get("user"), projects=projects)
+    
+    return render_template("home.html", user=session.get("user"))
 
 def fetch_projects_from_github():
     """Fetch the list of projects from the GitHub repository."""
