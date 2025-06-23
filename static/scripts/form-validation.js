@@ -17,15 +17,14 @@ function validateForm() {
             }
         }
         // 2. Validate Dates
-        const startDate = document.getElementById("start_date").value;
-        const endDate = document.getElementById("end_date").value;
+        const startDate = document.getElementById("temporal_coverage_start")?.value;
+        const endDate = document.getElementById("temporal_coverage_end")?.value;
 
-        if (startDate && endDate) { // Only check if both dates are provided
-            if (new Date(startDate) > new Date(endDate)) {
-                alert("Start Date cannot be after End Date.");
-                return false;
-            }
+        if (startDate && endDate && endDate <= startDate) { // Only check if both dates are provided
+            alert("Start Date cannot be after End Date.");
+            return false;
         }
+        
         // Validate URLs
         const projectUrl = document.getElementById("url").value.trim();
         const sopInputs = document.getElementsByName("sop_urls");
@@ -49,8 +48,8 @@ function validateForm() {
         }
         return true; // Allow form submission
     }
-    // Helper function to validate a URL
-    function isValidURL(url) {
+// Helper function to validate a URL
+function isValidURL(url) {
         try {
             new URL(url);
             return true;

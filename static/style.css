@@ -1,14 +1,18 @@
+.content{
+    max-width: 1200px;
+    margin: 0 auto;
+}
 body {
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
     color: rgb(10, 23, 78);
-    margin: 20px;
+    margin: 0px;
     background-color: #d7ebf8;
     font-size: larger;
 }
-.logo-container {
-    display: flex;
-    justify-content: space-around;  /* Adjusts spacing between logos */
-    align-items: center;  /* Vertically aligns logos */
+h1 {
+    font-size: 2rem;
+    font-family: Montserrat
 }
 button{
     background-color: rgb(74 102 127);
@@ -19,6 +23,7 @@ button{
     border-radius: 50px; 
     cursor: pointer;  /* Change cursor to pointer when hovering */
     transition: background-color 0.3s ease;  /* Smooth transition for hover effect */
+    margin: 1px;
 }
 button:hover {
     background-color: #6196ac;  
@@ -38,6 +43,7 @@ button.back-button{
     border-radius: 5px; 
     cursor: pointer;  /* Change cursor to pointer when hovering */
     transition: background-color 0.3s ease;  /* Smooth transition for hover effect */
+    margin: 1px;
 }
 .back-button:hover {
     background-color: #a84f06;
@@ -118,11 +124,11 @@ pre{
 pre code.language-json {
     background-color: #2d2d2d; 
     color: #f8f8f2; 
-    padding: 10px;
+    padding: 1px;
     border-radius: 8px;
     overflow: auto;
     font-size: 20px;
-    line-height: 1.5;
+    line-height: 1;
 }
 .code-container {
     background-color: #2d2d2d; 
@@ -147,41 +153,4 @@ hr {
     border: 0;
     border-top: 2px solid #002366; /* Dark blue horizontal rule */
     margin: 20px 0;
-  }
-  nav {
-    background-color: #002366;
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    position: sticky; /* Make the navbar sticky at the top */
-    top: 0;
-    z-index: 1000;
-  }
-  nav .navbar {
-    font-size: 1.5rem;
-    font-weight: bold;
-  }
-  nav ul {
-    list-style-type: none;
-    display: flex;
-    margin: 0;
-    padding: 0;
-  }
-  nav ul li {
-    margin: 0 10px;
-  }
-  nav ul li a {
-    color: white !important;
-    text-decoration: none !important;
-    font-size: 1rem;
-    padding: 5px 10px;
-    border-radius: 5px;
-    transition: background-color 0.3s, color 0.3s;
-  }
-  nav ul li a:hover {
-    background-color: #0056b3;
-    color: #eaf6ff; 
   }

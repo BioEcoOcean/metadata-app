@@ -1,14 +1,21 @@
+.content{
+    max-width: 1200px;
+    margin: 0 auto;
+}
 body {
     font-family: Arial, sans-serif;
     line-height: 1.6;
+    margin: 0px;
     background-color: #d7ebf8;
+    font-size: larger;
 }
 a{
     font-weight: normal;
 }
 h1 {
     font-size: 2rem;
-    color: #36768f;
+    color: rgb(10, 23, 78);
+    font-family: Montserrat
 }
 h2 {
     font-size: 1.75rem;
@@ -19,14 +26,15 @@ h3{
     font-size: 1.5rem;
     margin-top: 1em;
     margin-bottom: 0em;
-    color: rgb(73, 142, 173);
+    color: #36768f;
 }
 h4{
     font-size: 1.25rem;
     margin-top: 0em;
     margin-bottom: 0em;
-    color: rgb(54, 104, 128);
+    color: rgb(73, 142, 173);
 }
+/* extra colour rgb(54, 104, 128) */
 p {
     font-size: 1rem;
     color: #000000;
@@ -49,19 +57,36 @@ label {
 .form-group {
     margin-bottom: 1em;
 }
+/* Flexboxes */
+.flex-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1em;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.flex-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    justify-content: space-between;
+}
+
 button{
     background-color: rgb(51, 82, 110);
-    color: #fffefe; 
-    font-size: 16px; 
+    color: #fffefe;
+    font-size: 16px;
     padding: 5px 10px;  /* Add padding for bigger button size */
     margin: 2px;
-    border: none; 
-    border-radius: 5px; 
-    cursor: pointer; 
-    transition: background-color 0.3s ease;  
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 button:hover {
-    background-color: #4b778a;  
+    background-color: #4b778a;
 }
 button.submit-button {
     background-color: #0e5394;
@@ -74,13 +99,13 @@ button.submit-button {
 }
 button.back-button{
     background-color: rgb(201 106 9);
-    color: #e6e1e1; 
+    color: #e6e1e1;
     font-size: 1rem;
-    padding: 10px 14px;
-    border: none; 
-    border-radius: 5px; 
-    cursor: pointer; 
-    transition: background-color 0.3s ease;  
+    padding: 11px 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 a:link.button {
     color: rgb(255, 255, 255);
@@ -99,9 +124,20 @@ a:visited.button {
     background-color: #a84f06;
 }
 .container {
-    max-width: 800px;
+    /* max-width: 800px; */
     margin: 0 auto;
 }
+#spatial_coverage_name, #spatial_coverage_identifier{
+    min-width: 0;
+    width: 90%;
+    display: block;
+    margin-bottom: 10px;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #9d9d9d;
+    background-color: #e3e3e3;
+}
+
 #spatial_coverage_dropdown {
     max-height: 200px;
     overflow-y: auto;
@@ -109,41 +145,58 @@ a:visited.button {
     background-color: white;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
-#spatial_coverage_name {
-    width: 50%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+input, textarea, select{
+    width: 90%;
+    padding: 5px;
+    border: 1px solid #9d9c9c;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: white;
+}
+input::placeholder,
+textarea::placeholder {
+    white-space: normal;
+}
+textarea {
+    height: 70px; /* Set a default height for textareas */
 }
 select{
-    width: 50%;
+    word-wrap: break-word; /* Ensure word wrapping */
+    overflow-wrap: break-word; /* Compatibility with other browsers */
+    white-space: pre-wrap; /* Allow breaking at whitespace */
 }
-input{
-    width: 50%;
+select option {
+    width: 90%;
+    white-space: normal; /* Allow text to wrap */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    text-overflow: ellipsis; /* For browsers that truncate */
 }
 input[type="date"]{
-    width: 30%;
+    width: 70%;
+    margin: 5px;
 }
 input[type="checkbox"]{
     width: 20px;
     transform: scale(1.4);
 }
-#spatial_coverage_name{
-    width: 15%;
-    display: inline-block;
-}
-#spatial_coverage_identifier{
-    width: 20%;
-    display: inline-block;
-}
-textarea{
-    width: 50%;
+#selected-keywords-list {
+    display: flex;
+    flex-direction: column;
+    max-width: 90%;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #b7c4d8;
+    border-radius: 5px;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: white;    
 }
 #regions_table {
     width: 90%;
     margin-top: 10px;
     border-collapse: collapse;
-    table-layout: fixed; 
+    table-layout: fixed;
     overflow: scroll;
     height: 50vh
 }
@@ -159,7 +212,7 @@ textarea{
 }
 /* Make only a limited number of rows visible and enable scrolling */
 #regions_table tbody {
-    display: block;
+    /* display: block; */
     max-height: 600px; /* Set a fixed height to the table body */
     overflow-y: auto;  /* Enable vertical scrolling */
     height: 400px;     /* You can adjust the height depending on how many rows you want visible */
@@ -176,28 +229,30 @@ textarea{
 .required{
     color: red;
 }
-.visible { display: block; }
+
 .hidden { display: none; }
 .previous{
     color: grey;
     font-style: italic;
 }
 .info-circle {
-    display: inline-block;
+    display: inline-flex;
     color: #007bff; /* A nice blue color */
-    font-size: 14px;
+    font-size: 18px;
     cursor: help;
     margin-left: 5px;
     position: relative;
   }
-  
+
   /* Tooltip styling */
 .info-circle::after {
     content: attr(data-tooltip); /* Use the data-tooltip attribute */
     position: absolute;
-    bottom: 10%; /* Position above the info circle */
-    left: 900%;
-    transform: translateX(-50%);
+    top: 50%;
+    left: 110%;
+    transform: translateY(-50%);
+    max-width: 400px;
+    white-space: normal;    
     background-color: #333;
     color: #fff;
     padding: 5px 10px;
@@ -210,35 +265,209 @@ textarea{
     transition: opacity 0.2s;
     z-index: 100;
   }
-  
+
 .info-circle:hover::after {  /* Show tooltip on hover */
     opacity: 1;
     visibility: visible;
     text-wrap:inherit;
-    width: max-content; 
-    max-width: 200px
+    
   }
   /* Container with 2 rows and 2 columns */
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* # columns */
-    grid-template-rows: repeat(2, 1fr);    /* # rows */
-    width: 50%; 
-    grid-template-areas: 
-        "north east ."
-        "south west button"; 
-    align-items: center;   
+    grid-template-rows: repeat(3, 0.1fr);  /* # rows */
+    width: 50%;
+    grid-template-areas:
+        "north east "
+        "south west "
+        "button .";
+    align-items: center;
 }
 .grid-item {
     text-align: center;
     padding: 1px;
     vertical-align: middle;
 }
+.remove-btn {
+       /* Good default for desktop */
+    width: 25vw;
+    min-width: 60px;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    background-color: #6E4949;
+}
+.remove-btn:hover {
+    background-color: #853535;
+}
 .checkbox-container {
-    max-height: 50vh;
+    max-height: 30vh;
     overflow-y: auto;
     padding-right: 10px;  /* Prevent scrollbar overlap */
     border: 1px solid #8eb7cb54; /* Optional: Add a border to the container */
     background-color: #8eb7cb18; /* Optional: Add background color */
-    width: 500px;
+    width: 90%;
+}
+.table-scroll {
+    overflow-x: auto;
+    width: 100%;
+    max-height: 50vh;
+}
+.scrollable-table {
+    width: 90%;
+    margin-top: 10px;
+    border-collapse: collapse;
+    table-layout: fixed; /* Keeps columns fixed-width */
+
+}
+
+.scrollable-table th, .scrollable-table td {
+    padding: 8px;
+    text-align: left;
+    border: 1px solid #ccc;
+    word-wrap: break-word; /* Prevents overflow of long words */
+}
+
+.scrollable-table thead {
+    background-color: #81b0d6;
+    position: sticky; /* Keeps the header fixed while scrolling */
+    top: 0; /* Ensures the header stays at the top */
+    z-index: 1; /* Prevents it from being obscured */
+    table-layout: fixed;
+}
+
+.scrollable-table tbody {
+    /* display: block; Enables scrolling */
+    max-height: 400px; /* Limits visible rows */
+    overflow-y: auto; /* Adds a scrollbar for additional rows */
+    width: 100%; /* Keeps alignment with the table header */
+}
+
+.scrollable-table tr {
+    display: table; /* Maintains table-row layout */
+    width: 100%; /* Ensures proper alignment of cells */
+    table-layout: fixed; /* Keeps column widths consistent */
+}
+
+.scrollable-table tr:hover {
+    background-color: #f1f1f1;
+    cursor: pointer;
+}
+.scrollable-table col:nth-child(3) {
+    width: 20%;
+}
+#toTopButton {
+    position: fixed;
+    bottom: 60px; /* Distance from the bottom of the page */
+    right: 20px; /* Distance from the right edge of the page */
+    background-color: #007bff; /* Button background color */
+    color: white; /* Text color */
+    border: none; /* Remove border */
+    border-radius: 50px; /* Rounded corners */
+    padding: 10px 15px; /* Padding for the button */
+    cursor: pointer; /* Pointer cursor on hover */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Add a shadow */
+    z-index: 1000; /* Ensure it appears above other elements */
+    display: none; /* Initially hidden */
+    transition: opacity 0.3s ease, transform 0.3s ease; /* Smooth transitions */
+    opacity: 0.9;
+}
+
+#toTopButton:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    opacity: 0.8;
+}
+#toBottomButton {
+    position: fixed;
+    bottom: 20px; /* Distance from the bottom of the page */
+    right: 20px; /* Distance from the right edge of the page */
+    background-color: #007bff; /* Button background color */
+    color: white; /* Text color */
+    border: none; /* Remove border */
+    border-radius: 50px; /* Rounded corners */
+    padding: 10px 15px; /* Padding for the button */
+    cursor: pointer; /* Pointer cursor on hover */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Add a shadow */
+    z-index: 1000; /* Ensure it appears above other elements */
+    display: none; /* Initially hidden */
+    transition: opacity 0.3s ease, transform 0.3s ease; /* Smooth transitions */
+    opacity: 0.9;
+}
+
+#toBottomButton:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    opacity: 0.8;
+}
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    body {
+        padding: 10px 5px;
+        
+    }
+    * {
+        box-sizing: border-box;}
+    .flex-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    html, body {
+            overflow-x: hidden;
+    }
+
+    .container, .grid-container, .scrollable-table, #regions_table, .checkbox-container {
+            width: 100% !important;
+            max-width: 100% !important;
+    }
+    .container {
+        max-width: 100%;
+        padding: 0 5px;
+        width: 100%;
+    }
+    input, textarea, select {
+        width: 100%;
+        font-size: 1em;
+        
+        vertical-align: top;
+    }
+    input[type="text"],
+    input[type="url"],
+    input[type="email"] {
+        padding-bottom: 30px
+    }
+    #spatial_coverage_name,
+    #spatial_coverage_identifier {
+        min-width: 0;
+        width: 100%;
+        display: block;
+        margin-bottom: 10px;
+    }
+    .scrollable-table,
+    #regions_table, .checkbox-container {
+        width: 90%;
+        font-size: 0.95em;
+    }
+    h1, h2, h3, h4 {
+        font-size: 1.1em;
+    }
+    p {
+        font-size: 1em;
+    }
+    td, th {
+    word-break: break-all;
+    }
+    /* Make buttons smaller */
+    .remove-btn {
+        max-width: 90%;  /* Make it wider on mobile */
+    }
+    #toTopButton, #toBottomButton {
+    right: 10px;
+    transform: none;
+    }
+    /* Stack buttons vertically and shift left a bit */
+    #toTopButton {
+        bottom: 80px; /* push higher so buttons don't overlap */
+    }
+    #toBottomButton {
+        bottom: 20px;
+    }
 }

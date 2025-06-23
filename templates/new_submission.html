@@ -1,38 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='form.css') }}">
-    <script src="/static/scripts/inputbox.js"></script>
-    <!-- Scripts for maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+{% extends "header_form.html" %}
 
-    <title>New Submission</title>
-</head>
-<body>
+{% block title %}New Submission{% endblock %}
+
+{% block content %}
+
     <h1>Submit BioEco Metadata</h1>
-    <p>Fill the form below, ensuring required fields are populated, and then submit.</p>
+    <p>Fill the form below, ensuring required fields are populated, and then submit. Examples are provided as placeholders.</p>
     <button class="back-button"><a href="{{ url_for('dataproducer') }}" class="button">Back</a></button>
-    <form method="POST" action="/submit">
+    <form method="POST" action="/submit" onsubmit="return validateForm();">
         {{ form_html|safe }}
-        <script src="/static/scripts/boundingmap.js"></script>
+        
+        <button type="submit" class="submit-button" name="action" value="save_draft" id="save-draft-btn">Save Draft</button>
+        <button type='submit' class="submit-button" name='action' value='submit_to_github' id="submit_to_github">Submit Entry</button>
+        <button type='submit' class="submit-button" name='action' value='print_json' id="print-json-btn">Print JSON</button>
+        
+    </form>
+    <script src="/static/scripts/boundingmap.js"></script>
         <script src="/static/scripts/marineregions.js"></script>
         <script src="/static/scripts/form-validation.js"></script> 
         <script src="/static/scripts/keywords.js"></script> 
-        <button type='submit' class="submit-button" name='action' value='submit_to_github' id="submit_to_github">Submit to GitHub</button>
-        <button type='submit' class="submit-button" name='action' value='print_json' id="print-json-btn">Print JSON</button>
-    </form>
-    <br><br><button class="back-button" id="scroll-to-top">To Top</button>
-    <script>
-        document.getElementById("scroll-to-top").addEventListener("click", function(event) {
-            event.preventDefault();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-    </script>
+        <script src="/static/scripts/eovs.js"></script> 
+    <button id="toTopButton" onclick="scrollToTop()">To Top</button>
+    <button id="toBottomButton" onclick="scrollToBottom()">To Bottom</button>
     
-</body>
-</html>
+
+{% endblock %}

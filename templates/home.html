@@ -7,23 +7,23 @@
     <p style="color: red;"><em>UNDER DEVELOPMENT: this tool is still in early development. Feedback is welcome and can be provided by adding a GitHub issue or reaching out to e.lawrence@unesco.org</em></p>
     
     <h3>Welcome, {{ user["login"] }}, you are logged in.</h3>
-    <a href="{{ url_for('github.login') }}"> <button class="logins">Login with GitHub</button></a>
+    <a href="{{ url_for('github.login') }}"> <button class="logins">Login with GitHub </button></a>
     &nbsp;
-    <a href="{{ url_for('logout') }}"> <button class="logins">Log out</button> </a>
+    <a href="{{ url_for('logout') }}"> <button class="logins">Log out</button></a>
 
     <h1>Submit EOV Metadata</h1>
     <p>This application is designed to streamline the creation of metadata JSON-LD files and sitemaps for Essential Ocean Variables (EOV) "data producers", e.g. programmes,
         projects, and/or institutions. This tool
         facilitates seamless integration with the GOOS BioEco Portal and the Ocean Data and Information System (ODIS). 
         Generated JSON-LD files are submitted to the BioEcoOcean GitHub repository as issues, when entries are updated, a date is added in a comment.</p>
-    <p>You must have a GitHub account to use this tool as submissions are sent to the GitHub repository.</p>
+    <p><img src="{{ url_for('static', filename='images/GitHub_Logo.png') }}" alt="GitHub Logo" height="40px"> You must have a GitHub account to use this tool as submissions are sent to the GitHub repository.</p>
     <button><a href="{{ url_for('dataproducer') }}" class="button">Add metadata</a></button>
 
     <h1>Coming soon: data tools</h1>
     <p>Upload an EOV dataset and convert it to Darwin Core, making it easier to submit to OBIS</p>
 
     <br>
-    <button class="back-button"><a href="https://github.com/BioEcoOcean/metadata-tracking-dev/issues/new" class="button">GitHub: Submit an Issue or Feedback</a></button>
+    <button class="back-button"><a href="https://github.com/BioEcoOcean/metadata-tracking-dev/issues/new" class="button">GitHub: Submit an Issue or Feedback</a></button> 
     <button class="back-button"><a href="https://github.com/BioEcoOcean/metadata-app" class="button">GitHub Repo for app development</a></button>
 
 {% endblock %}

@@ -264,6 +264,19 @@ def handle_submission():
     if action == "print_json":
         return render_template("print_json.html", schema_entry=json.dumps(schema_entry, indent=4))
 
+    # Handle save draft action
+    if action == "save_draft":
+        result = process_submission_action(session.get('issue_number', None), action, schema_entry, GITHUB_API_URL, REPO_OWNER, GITHUB_REPO)
+        if result.get("success"):
+            message = result.get("message", "Draft saved successfully!")
+            issue_url = result.get("issue_url")
+            return render_template("success.html", message=message, issue_url=issue_url)
+        else:
+            error_message = result.get("error", "An unexpected error occurred.")
+            error_details = result.get("details", None)
+            return render_template("error.html", error=error_message, details=error_details)
+
+
     # Call the function to process the action
     result = process_submission_action(session.get('issue_number', None), action, schema_entry, GITHUB_API_URL, REPO_OWNER, GITHUB_REPO)
     print("ACTION RESULT: ", result)
@@ -297,7 +310,8 @@ def update_entry():
     GITHUB_TOKEN = session.get("github_oauth_token", {}).get("access_token")
     issues = get_github_issues()
     filtered_issues = [
-        issue for issue in issues if "metadata submission" in [label["name"] for label in issue.get("labels", [])]
+        issue for issue in issues
+        if any(label["name"] in ["metadata submission", "draft submission"] for label in issue.get("labels", []))
     ]
 
     if request.method == "GET":

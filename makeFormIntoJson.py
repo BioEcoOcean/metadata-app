@@ -1,4 +1,6 @@
 from flask import request
+import json
+
 def clean_dict(data):
     return {k: v for k, v in data.items() if v}
 
@@ -15,8 +17,27 @@ def makeFormJson():
         temporal_coverage_end = sanitized_data.get("temporal_coverage_end", [""])[0]
 
         # Handle keywords dynamically as a list
-        keywords = request.form.getlist("keywords")  # Collect all 'keywords' input values
-        sanitized_data["keywords"] = keywords if keywords else []
+        # keywords = request.form.getlist("keywords")  # Collect all 'keywords' input values
+        # sanitized_data["keywords"] = keywords if keywords else []
+        sanitized_data["keywords"] = []
+        selected_keywords_json = request.form.get("selected-keywords-json")  # A hidden input containing the JSON array of selected keywords
+        print("selected keywords json: ", selected_keywords_json)
+        if selected_keywords_json:
+            try:
+                selected_keywords = json.loads(selected_keywords_json)  # Parse the JSON string into a Python list of dictionaries
+                sanitized_data["keywords"] = [
+                    {
+                        "@id": keyword.get("id"),
+                        "@type": "URL",
+                        "name": keyword.get("label"),
+                        "url": keyword.get("id")  # Using identifier as the URL
+                    }
+                    for keyword in selected_keywords
+                    if keyword.get("id") and keyword.get("label")  # Ensure both id and label exist
+                ]
+            except json.JSONDecodeError:
+                # Handle JSON parsing error
+                sanitized_data["keywords"] = []
 
         # Handle the spatialCoverage field
         if sanitized_data["spatial_coverage_name"] and sanitized_data["spatial_coverage_identifier"]:
@@ -52,13 +73,13 @@ def makeFormJson():
                 "legalName": funder_name[i] if i < len(funder_name) else "",
                 "url": funder_url[i] if i < len(funder_url) else ""
             }
-
+            funder = funder if funder["name"] or funder["url"] else None
             # Create a single funding entry with its associated funder
             funding_entry = {
                 "@type": "MonetaryGrant",
                 "name": funding_name[i] if i < len(funding_name) else "",
                 "identifier": funding_identifier[i] if i < len(funding_identifier) else "",
-                "funder": [funder] if funder["name"] or funder["url"] else []  # Only add if funder has data
+                "funder": funder
             }
 
             # Append the funding entry if it has meaningful data
@@ -93,6 +114,10 @@ def makeFormJson():
 
         print("bounds: ", sanitized_data.get("north", [""])[0])
         print("san data: ", sanitized_data)
+        
+        shortname = sanitized_data.get('shortname', [""])[0]
+        project_name = sanitized_data.get('project_name')[0]
+        project_name_sanitized = (shortname or project_name).replace(" ", "_")
 
         ########## Step 2: Build schema_entry JSON with mappings ##########
         schema_entry = {
@@ -101,10 +126,11 @@ def makeFormJson():
                 "geosparql": "http://www.opengis.net/ont/geosparql#"
             },
             "@type": "Project",
-            "@id": f"https://example.com/json/{sanitized_data.get('project_name', ['Unnamed'])[0]}",
-            "name": sanitized_data.get("project_name", [""])[0],
+            "@id": f"https://raw.githubusercontent.com/BioEcoOcean/metadata-tracking-dev/refs/heads/main/jsonFiles/{project_name_sanitized}/{project_name_sanitized}.json",
+            "legalName": sanitized_data.get("project_name", [""])[0],
             "url": sanitized_data.get("url", [""])[0],          
             "frequency": sanitized_data.get("frequency", ["Never"])[0],
+            "keywords": sanitized_data.get("keywords", []),
             "license": {
                 "@type": "CreativeWork",
                 "name": license_name,
@@ -114,6 +140,9 @@ def makeFormJson():
         }
 
         # Conditionally add fields if they are not blank
+        if sanitized_data.get("shortname", [""])[0]:
+            schema_entry["name"] = sanitized_data.get("shortname", [""])[0]
+        
         if sanitized_data.get("description", [""])[0]:
             schema_entry["description"] = sanitized_data.get("description", [""])[0]
 
@@ -125,9 +154,9 @@ def makeFormJson():
                 "url": sanitized_data.get("projid", [""])[0],
             },
 
-        keywords = [keyword.strip() for keyword in sanitized_data.get("keywords", []) if keyword.strip()]
-        if keywords:
-            schema_entry["keywords"] = keywords
+        # keywords = [keyword.strip() for keyword in sanitized_data.get("keywords", []) if keyword.strip()]
+        # if keywords:
+        #     schema_entry["keywords"] = keywords
 
         if temporal_coverage_start and temporal_coverage_end:
             schema_entry["temporalCoverage"] = f"{temporal_coverage_start}/{temporal_coverage_end}"
@@ -135,7 +164,7 @@ def makeFormJson():
             schema_entry["temporalCoverage"] = temporal_coverage_start
 
         if sanitized_data.get("spatial_coverage_name", [""])[0] and sanitized_data.get("spatial_coverage_identifier", [""])[0]:
-            spatial_coverage = {
+            area_served = {
                     "@type": "Place",
                     "name": sanitized_data.get("spatial_coverage_name", [""])[0],
                     "identifier": sanitized_data.get("spatial_coverage_identifier", [""])[0],
@@ -148,12 +177,12 @@ def makeFormJson():
             east = sanitized_data.get("east", [""])[0]
 
             if south and west and north and east:
-                spatial_coverage["geo"] = {
+                area_served["geo"] = {
                         "@type": "GeoShape",
                         "description": "schema.org expects lat long (Y X) coordinate order. Box syntax is: miny minx maxy maxx",
                         "box": f"{south} {west} {north} {east}"
                 }
-            schema_entry["spatialCoverage"] = [spatial_coverage]
+            schema_entry["areaServed"] = [area_served]
         
         if sanitized_outputs:
             #schema_entry.setdefault("isRelatedTo", [])
@@ -165,21 +194,27 @@ def makeFormJson():
             schema_entry["funding"] = funding
 
 
-        # Step 3: Handle EOVs, and append to variableMeasured
-        variable_measured = []
-        for eov_category in ['bioeco_eovs', 'other_eovs','ebvs']:
+        # Handle EOVs, and append to variableMeasured
+        #variable_measured = []
+        for eov_category in ['bioeco_eovs', 'other_eovs']: # I removed 'ebvs' - do we need them in the form??
             if eov_category in sanitized_data:
                 for eov in sanitized_data[eov_category]:
                     name, propertyID = eov.split("|")
                     if name and propertyID:  # Ensure both fields have data
-                        variable_measured.append({
-                            "@type": "PropertyValue",
+                        schema_entry["keywords"].append({
+                            "@type": "DefinedTerm",
                             "name": name,
-                            "propertyID": propertyID
+                            "url": [propertyID],
+                            "inDefinedTermSet": {
+                                "@type": "DefinedTermSet",
+                                "name": "Essential Ocean Variables",
+                                "description": "GOOS Essential Ocean Variables",
+                                "url": "https://goosocean.org/eov/"
+                            },
                         })
         # Add variableMeasured to schema_entry only if there are valid variables
-        if variable_measured:
-            schema_entry["variableMeasured"] = variable_measured
+        #if variable_measured:
+         #   schema_entry["keywords"].append(variable_measured)   ##change this to keywords
 
         # Step 4: Add measurementtechnique - platforms and SOPs, if applicable
         if 'measurement_platforms' in sanitized_data:

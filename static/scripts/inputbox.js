@@ -2,7 +2,7 @@ function addRemoveButton(container) {
     const removeButton = document.createElement("button");
     removeButton.type = "button";
     removeButton.textContent = "Remove";
-    removeButton.style.marginLeft = "10px"; // Add some spacing for better visuals
+    removeButton.className = "remove-btn";
     removeButton.onclick = function() {
         container.remove();
     };
@@ -34,7 +34,7 @@ function addOutputInput() {
     newInput.type = "text";
     newInput.name = "outputs";  // Keep name="keywords" so Flask collects them as a list
     newInput.className = "outputs-input";
-    newInput.placeholder = "Enter an output";
+    newInput.placeholder = "e.g. a product, service, etc.";
     newInput.style.marginTop = "5px";  // Add some spacing for better visuals  
     
     newInputContainer.appendChild(newInput);
@@ -50,7 +50,7 @@ function addSOPInput() {
     const newInput = document.createElement("input");
     newInput.type = "url";
     newInput.name = "sops";  
-    newInput.className = "sops-input"; newInput.placeholder = "Enter a link to an SOP";
+    newInput.className = "sops-input"; newInput.placeholder = "Link to SOP e.g. https://repository.oceanbestpractices.org/handle/11329/2465";
     newInput.style.marginTop = "5px";
     
     // Create the checkbox for OBPs
@@ -83,7 +83,7 @@ function addSOPInput() {
 function addContactInput(name = "", email = "", role = "", id = "") {
         // Create a new container for the contact pair
         const contactContainer = document.createElement("div");
-        contactContainer.className = "contact-container";
+        contactContainer.className = "contact-container flex-col";
         contactContainer.style.marginTop = "10px"; // Add spacing between pairs
     
         // Create the input for the contact name
@@ -91,7 +91,7 @@ function addContactInput(name = "", email = "", role = "", id = "") {
         nameInput.type = "text";
         nameInput.name = "contact_names";  // Flask will collect these as a list
         nameInput.className = "contact-name-input";
-        nameInput.placeholder = "Enter contact name";
+        nameInput.placeholder = "Enter contact name, e.g. Jane Doe";
         nameInput.value = name;
         nameInput.style.marginRight = "10px"; // Add spacing between the two inputs
         nameInput.required = true;
@@ -101,7 +101,7 @@ function addContactInput(name = "", email = "", role = "", id = "") {
         emailInput.type = "email";
         emailInput.name = "contact_emails";  // Flask will collect these as a list
         emailInput.className = "contact-email-input";
-        emailInput.placeholder = "Enter contact email";
+        emailInput.placeholder = "Enter contact email, e.g. exampleaddress@company.org";
         emailInput.value = email;
         emailInput.required = true;
 
@@ -121,7 +121,7 @@ function addContactInput(name = "", email = "", role = "", id = "") {
         roleSelect.appendChild(defaultOption);
         
         // Add dropdown options
-        const roles = ["Organization", "Contact Person", "Data collector", "Data manager", "Researcher", "Other"];
+        const roles = ["Contact Person", "Data collector", "Data manager", "Organization", "Principle Investigator", "Researcher", "Other"];
         roles.forEach(optionRole  => {
             const option = document.createElement("option");
             option.value = optionRole ;
@@ -137,14 +137,15 @@ function addContactInput(name = "", email = "", role = "", id = "") {
         identiferInput.type = "url";
         identiferInput.name = "contact_ids";  // Flask will collect these as a list
         identiferInput.className = "contact-id-input";
-        identiferInput.placeholder = "Enter contact id";
+        identiferInput.placeholder = "Enter contact id, e.g. https://orcid.org/0000-0000-0000-0000";
         identiferInput.value = id; 
     
         // Append both inputs to the contact container
-        contactContainer.appendChild(nameInput);addRemoveButton(contactContainer);
+        contactContainer.appendChild(nameInput);
         contactContainer.appendChild(emailInput);
         contactContainer.appendChild(roleSelect);
         contactContainer.appendChild(identiferInput);
+        addRemoveButton(contactContainer);
         
     
         // Append the contact container to the main container
@@ -162,7 +163,7 @@ function addContactInput(name = "", email = "", role = "", id = "") {
         fundingOrg.type = "text";
         fundingOrg.name = "funder_name";  // Flask will collect these as a list
         fundingOrg.className = "funder-name";
-        fundingOrg.placeholder = "Enter name of funding organization";
+        fundingOrg.placeholder = "Funding organization name, e.g. European Union";
         fundingOrg.value = name;
         fundingOrg.style.marginRight = "10px"; // Add spacing between the two inputs
         
@@ -171,7 +172,7 @@ function addContactInput(name = "", email = "", role = "", id = "") {
         fundingURL.type = "url";
         fundingURL.name = "funder_url";  // Flask will collect these as a list
         fundingURL.className = "funder-url";
-        fundingURL.placeholder = "Enter URL of funding organisation";
+        fundingURL.placeholder = "Funding organization URL, e.g. https://european-union.europa.eu/";
         
         fundingURL.style.marginRight = "10px";
         
@@ -180,7 +181,7 @@ function addContactInput(name = "", email = "", role = "", id = "") {
         awardInput.type = "text";
         awardInput.name = "funding_name";  // Flask will collect these as a list
         awardInput.className = "funding-name";
-        awardInput.placeholder = "Enter name of the funding award";
+        awardInput.placeholder = "Funding award name, e.g. Horizon Europe";
         awardInput.style.marginRight = "10px";
         
         // Create the input for the funder identifer
@@ -188,14 +189,15 @@ function addContactInput(name = "", email = "", role = "", id = "") {
         identiferFunding.type = "text";
         identiferFunding.name = "funding_identifier";  // Flask will collect these as a list
         identiferFunding.className = "funding-identifier";
-        identiferFunding.placeholder = "Enter the identifier of the funding award";
+        identiferFunding.placeholder = "Funding award identifier number, e.g. 101136748";
         identiferFunding.value = id; 
     
         // Append both inputs to the contact container
-        funderContainer.appendChild(fundingOrg);addRemoveButton(funderContainer);
+        funderContainer.appendChild(fundingOrg);
         funderContainer.appendChild(fundingURL);
         funderContainer.appendChild(awardInput);
         funderContainer.appendChild(identiferFunding);
+        addRemoveButton(funderContainer);
     
         // Append the contact container to the main container
         document.getElementById("funder-container").appendChild(funderContainer);

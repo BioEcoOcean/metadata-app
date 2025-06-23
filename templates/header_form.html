@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='form.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='header_css.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+    <!-- Scripts -->
+    <script src="/static/scripts/inputbox.js"></script>
+    <script src="/static/scripts/top-button.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    <script src="/static/scripts/form-validation.js"></script>
+
+    <title>{% block title %}Default Title{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <!-- This is your common header content -->
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='images/iode-unesco.png') }}" alt="UNESCO-IOC Logo" height="100px">
+            <img src="{{ url_for('static', filename='images/OBIS_logo.png') }}" alt="OBIS Logo" height="100px">
+            <img src="{{ url_for('static', filename='images/bioecoocean_logo.png') }}" alt="BioEcoOcean Logo" height="100px">
+            <img src="{{ url_for('static', filename='images/GOOS-BioEco-logo.png') }}" alt="GOOS-BioEco Logo" height="100px">
+        </div>
+        <br>
+        <nav>
+            <div class="navbar">EOV Data Management Tools</div>
+                <div class="hamburger" onclick="toggleMenu()">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+            <div class="navbar-menu">
+                <ul>
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li><a href="{{ url_for('dataproducer') }}">Metadata</a></li>
+                    <li><a href="{{ url_for('data') }}">Data tools</a></li>
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                </ul>
+            </div>
+          </nav>
+          <script>
+            function toggleMenu() {
+                const navMenu = document.querySelector(".navbar-menu");
+                navMenu.classList.toggle("show");
+            }
+        </script>
+    </header>
+    <script>
+        // Fetch and populate the form when "Update" button is clicked
+        async function populateForm() {
+            const selectedIssue = document.getElementById("selected_issue").value;
+            if (!selectedIssue) {
+                alert("Please select an issue.");
+                return;
+            }
+
+            const response = await fetch("/update_entry", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ selected_issue: selectedIssue })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                const data = result.data;
+
+                // Populate form fields with data
+                for (const [key, value] of Object.entries(data)) {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        if (Array.isArray(value)) {
+                            // Handle multiple values (e.g., keywords)
+                            element.value = value.join(", ");
+                        } else {
+                            element.value = value;
+                        }
+                    }
+                }
+
+                // Show the form
+                document.getElementById("form-container").style.display = "block";
+            } else {
+                alert("Error fetching issue data: " + (result.error.message || "Unknown error"));
+            }
+        }
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const submitBtn = document.getElementById("submit_to_github");
+            if (submitBtn) {
+                submitBtn.addEventListener("click", function(e) {
+                    const confirmed = confirm("Are you sure? This will submit your entry to GitHub where it will be processed and made accessible. You can update it later.");
+                    if (!confirmed) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        });
+    </script>
+
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+    
+    {% include 'footer.html' %}
+
+</body>
+</html>

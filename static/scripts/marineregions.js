@@ -1,6 +1,9 @@
 // Search the Marine Regions API based on input
-document.getElementById("search_regions").addEventListener("input", function () {
-    const query = this.value.trim();
+const regionInput = document.getElementById("search_regions");
+const regionBtn = document.getElementById("search_regions_btn");
+
+function triggerRegionSearch() {
+    const query = regionInput.value.trim();
 
     if (query.length >= 3) {  // Only search after the user types at least 3 characters
         fetch(`https://www.marineregions.org/rest/getGazetteerRecordsByName.json/${query}/`)
@@ -9,7 +12,7 @@ document.getElementById("search_regions").addEventListener("input", function () 
                 const tableBody = document.getElementById("regions_table").getElementsByTagName("tbody")[0];
                 tableBody.innerHTML = "";  // Clear the previous table rows
                 const table = document.getElementById("regions_table");
-                table.style.display = "block";  // Show the table
+                table.style.display = "table";  // Show the table
 
                 // Populate the table with search results
                 data.forEach(region => {
@@ -47,6 +50,17 @@ document.getElementById("search_regions").addEventListener("input", function () 
     } else {
         // Hide the table if the search query is too short
         document.getElementById("regions_table").style.display = "none";
+    }
+}
+
+// Button click
+regionBtn.addEventListener("click", triggerRegionSearch);
+
+// Enter key
+regionInput.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        triggerRegionSearch();
     }
 });
 

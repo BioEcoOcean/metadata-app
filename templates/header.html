@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EOV Metadata Submissions</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
     <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='header_css.css') }}">
     <title>{% block title %}Default Title{% endblock %}</title>    
 </head>
 <body>
@@ -23,14 +22,26 @@
         <br>
         <nav>
             <div class="navbar">EOV Data Management Tools</div>
-            <ul>
-              <li><a href="{{ url_for('home') }}">Home</a></li>
-               <li><a href="{{ url_for('dataproducer') }}">Metadata</a></li>
-               <li><a href="{{ url_for('data') }}">Data tools</a></li>
-               <li><a href="{{ url_for('about') }}">About</a></li>
-               
-            </ul>
+                <div class="hamburger" onclick="toggleMenu()">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+            <div class="navbar-menu">
+                <ul>
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li><a href="{{ url_for('dataproducer') }}">Metadata</a></li>
+                    <li><a href="{{ url_for('data') }}">Data tools</a></li>
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                </ul>
+            </div>
           </nav>
+          <script>
+            function toggleMenu() {
+                const navMenu = document.querySelector(".navbar-menu");
+                navMenu.classList.toggle("show");
+            }
+        </script>
     </header>
 
     <div class="content">

@@ -64,8 +64,7 @@
                         "phyto": {
                             "name": "Phytoplankton biomass and diversity",
                             "id": "phyto",
-                            "propertyID": "https://goosocean.org/document/17507"
-                        },
+                            "propertyID": "https://goosocean.org/document/17507"},
                         "zoo": {
                             "name": "Zooplankton biomass and diversity",
                             "id": "zoo",
@@ -74,21 +73,21 @@
                         "fish": {
                             "name": "Fish abundance and distribution",
                             "id": "fish",
-                            "propertyID": "https://goosocean.org/document/17510"},
+                            "propertyID": ["https://goosocean.org/document/17510"]},
                         "turtle": {
-                            "name": "Marine turtles abundance and distribution",
+                            "name": "Sea turtles abundance and distribution",
                             "id": "turtle",
-                            "propertyID": "https://goosocean.org/document/17511"},
+                            "propertyID": "https://goosocean.org/document/36268"},
                         "bird": {
-                            "name": "Marine birds abundance and distribution",
+                            "name": "Seabirds abundance and distribution",
                             "id": "bird",
-                            "propertyID": "https://goosocean.org/document/17511"},
+                            "propertyID": "https://goosocean.org/document/36267"},
                         "mammal": {
-                            "name": "Marine mammals abundance and distribution",
+                            "name": "Marine mammal abundance and distribution",
                             "id": "mammal",
-                            "propertyID": "https://goosocean.org/document/17511"},
+                            "propertyID": "https://goosocean.org/document/36266"},
                         "coral": {
-                            "name": "Hard coral cover and composition",
+                            "name": "Coral cover and composition",
                             "id": "coral",
                             "propertyID": "https://goosocean.org/document/17512"},
                         "seagrass": {
@@ -106,9 +105,9 @@
                         "microbe": {
                             "name": "Microbe biomass and diversity",
                             "id": "microbe",
-                            "propertyID": "https://goosocean.org/what-we-do/framework/essential-ocean-variables/"},
+                            "propertyID": "https://goosocean.org/document/36264"},
                         "invert": {
-                            "name": "Invertebrate abundance and distribution",
+                            "name": "Benthic invertebrate abundance and distribution",
                             "id": "invert",
                             "propertyID": "https://goosocean.org/what-we-do/framework/essential-ocean-variables/"}
                     }
@@ -265,145 +264,235 @@
                 },
                 "sub-variables": {
                     "name": "EOV Sub-Variables",
-                    "description": "Select all relevant sub-variables.",
+                    "description": "Select all relevant EOV sub-variables.",
                     "type": "dropdown",
                     "allow_multiple": true,
                     "schema_mapping": "variableMeasured",
                     "options":{
-                        "1": {
-                            "name": "Genetic composition Genetic diversity",
-                            "id": "genetic_diversity",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                       "1": {
+                            "name": "Coral - Coral condition and health",
+                            "id": "coral_condition_health",
+                            "propertyID": "https://goosocean.org/document/17512"
                         },
                         "2": {
-                            "name": "Genetic composition Genetic differentiation",
-                            "id": "genetic_differentiation",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Coral - Coral diversity",
+                            "id": "coral_diversity",
+                            "propertyID": "https://goosocean.org/document/17512"
                         },
                         "3": {
-                            "name": "Fish abundance",
-                            "id": "fish_abundance",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Coral - Live coral cover and areal extent",
+                            "id": "live_coral_cover_areal_extent",
+                            "propertyID": "https://goosocean.org/document/17512"
                         },
                         "4": {
-                            "name": "Fish abundance and distribution",
-                            "id": "fish_abundance_and_distribution",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Coral - Total habitable substrate",
+                            "id": "total_habitable_substrate",
+                            "propertyID": "https://goosocean.org/document/17512"
                         },
                         "5": {
-                            "name": "Fish abundance by size/age/stage",
-                            "id": "fish_abundance_by_size_age_stage",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Benthic invertebrates - Number of individuals per unit area",
+                            "id": "benthic_invertebrates_number_individuals",
+                            "propertyID": "https://goosocean.org/document/36269"
                         },
                         "6": {
-                            "name": "Fish biomass by size/age/stage",
-                            "id": "fish_biomass_by_size_age_stage",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Benthic invertebrates - Biomass per unit area",
+                            "id": "benthic_invertebrates_biomass",
+                            "propertyID": "https://goosocean.org/document/36269"
                         },
                         "7": {
-                            "name": "Fish community composition",
-                            "id": "fish_community_composition",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Benthic invertebrates - % living cover",
+                            "id": "benthic_invertebrates_living_cover",
+                            "propertyID": "https://goosocean.org/document/36269"
                         },
                         "8": {
-                            "name": "Fish community composition - community abundance",
-                            "id": "fish_community_composition_community_abundance",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Benthic invertebrates - Presence/absence",
+                            "id": "benthic_invertebrates_presence_absence",
+                            "propertyID": "https://goosocean.org/document/36269"
                         },
                         "9": {
-                            "name": "Fish community composition - interaction diversity",
-                            "id": "fish_community_composition_interaction_diversity",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Marine turtle - Nesting success",
+                            "id": "sea_turtle_nesting_success",
+                            "propertyID": "https://goosocean.org/document/36268"
                         },
                         "10": {
-                            "name": "Fish community composition - taxonomic/phylogenetic diversity",
-                            "id": "fish_community_composition_taxonomic_phylogenetic_diversity",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Sea turtle - Number of individuals in foraging habitats",
+                            "id": "sea_turtle_foraging_individuals",
+                            "propertyID": "https://goosocean.org/document/36268"
                         },
                         "11": {
-                            "name": "Fish community composition - trait diversity",
-                            "id": "fish_community_composition_trait_diversity",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Sea turtle - Start, peak, and end week of the nesting season",
+                            "id": "sea_turtle_nesting_season",
+                            "propertyID": "https://goosocean.org/document/36268"
                         },
                         "12": {
-                            "name": "Fish distribution",
-                            "id": "fish_distribution",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Sea turtle - Number of stranding records",
+                            "id": "sea_turtle_stranding_records",
+                            "propertyID": "https://goosocean.org/document/36268"
                         },
                         "13": {
-                            "name": "Fish ecosystem functioning",
-                            "id": "fish_ecosystem_functioning",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Seabirds - Species population census or count data",
+                            "id": "seabirds_population_census",
+                            "propertyID": "https://goosocean.org/document/36267"
                         },
                         "14": {
-                            "name": "Fish ecosystem functioning - ecosystem disturbances",
-                            "id": "fish_ecosystem_functioning_ecosystem_disturbances",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Seabirds - Species presence/absence",
+                            "id": "seabirds_presence_absence",
+                            "propertyID": "https://goosocean.org/document/36267"
                         },
                         "15": {
-                            "name": "Fish ecosystem functioning - ecosystem phenology",
-                            "id": "fish_ecosystem_functioning_ecosystem_phenology",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Seabirds - Repeated individual presence",
+                            "id": "seabirds_individual_presence",
+                            "propertyID": "https://goosocean.org/document/36267"
                         },
                         "16": {
-                            "name": "Fish ecosystem structure",
-                            "id": "fish_ecosystem_structure",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Phytoplankton biomass (concentration)",
+                            "id": "phytoplankton_biomass",
+                            "propertyID": "https://goosocean.org/document/17507"
                         },
                         "17": {
-                            "name": "Fish ecosystem structure - ecosystem distribution",
-                            "id": "fish_ecosystem_structure_ecosystem_distribution",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Phytoplankton - Composition",
+                            "id": "phytoplankton_composition",
+                            "propertyID": "https://goosocean.org/document/17507"
                         },
                         "18": {
-                            "name": "Fish genetic composition",
-                            "id": "fish_genetic_composition",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Phytoplankton - Number of HAB Events",
+                            "id": "phytoplankton_hab_events",
+                            "propertyID": "https://goosocean.org/document/17507"
                         },
                         "19": {
-                            "name": "Fish genetic composition - effective population",
-                            "id": "fish_genetic_composition_effective_population",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Seagrass - Percent cover",
+                            "id": "seagrass_percent_cover",
+                            "propertyID": "https://goosocean.org/document/17513"
                         },
                         "20": {
-                            "name": "Fish genetic composition - genetic differentiation",
-                            "id": "fish_genetic_composition_genetic_differentiation",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Seagrass - Species composition",
+                            "id": "seagrass_species_composition",
+                            "propertyID": "https://goosocean.org/document/17513"
                         },
                         "21": {
-                            "name": "Fish genetic composition - genetic diversity",
-                            "id": "fish_genetic_composition_genetic_diversity",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Seagrass - Areal extent",
+                            "id": "seagrass_areal_extent",
+                            "propertyID": "https://goosocean.org/document/17513"
                         },
                         "22": {
-                            "name": "Fish genetic composition - inbreeding",
-                            "id": "fish_genetic_composition_inbreeding",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Marine mammal - Presence/absence (living or dead)",
+                            "id": "marine_mammal_presence_absence",
+                            "propertyID": "https://goosocean.org/document/36266"
                         },
                         "23": {
-                            "name": "Fish species traits",
-                            "id": "fish_species_traits",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Marine mammal - Count data",
+                            "id": "marine_mammal_count_data",
+                            "propertyID": "https://goosocean.org/document/36266"
                         },
                         "24": {
-                            "name": "Fish species traits - morphology",
-                            "id": "fish_species_traits_morphology",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Marine mammal - Repeated individual presence (tracking/resights)",
+                            "id": "marine_mammal_individual_presence",
+                            "propertyID": "https://goosocean.org/document/36266"
                         },
                         "25": {
-                            "name": "Fish species traits - movement",
-                            "id": "fish_species_traits_movement",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Microbe - Microbial concentration (biomass / abundance)",
+                            "id": "microbe_biomass_abundance",
+                            "propertyID": "https://goosocean.org/document/36264"
                         },
                         "26": {
-                            "name": "Fish species traits - phenology",
-                            "id": "fish_species_traits_phenology",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Microbe - Diversity",
+                            "id": "microbe_diversity",
+                            "propertyID": "https://goosocean.org/document/36264"
                         },
                         "27": {
-                            "name": "Fish species traits - physiology",
-                            "id": "fish_species_traits_physiology",
-                            "propertyID": "https://geobon.org/ebvs/what-are-ebvs/"
+                            "name": "Microbe - Genomic and genetic diversity",
+                            "id": "microbe_genetic_diversity",
+                            "propertyID": "https://goosocean.org/document/36264"
+                        },
+                        "28": {
+                            "name": "Microbe - Phenotypic diversity",
+                            "id": "microbe_phenotypic_diversity",
+                            "propertyID": "https://goosocean.org/document/36264"
+                        },
+                        "29": {
+                            "name": "Microbe - Functional diversity",
+                            "id": "microbe_functional_diversity",
+                            "propertyID": "https://goosocean.org/document/36264"
+                        },
+                        "30": {
+                            "name": "Microbe - Presence of fecal indicator bacteria",
+                            "id": "microbe_fecal_indicator_bacteria",
+                            "propertyID": "https://goosocean.org/document/36264"
+                        },
+                        "31": {
+                            "name": "Mangrove - Mangrove areal extent",
+                            "id": "mangrove_areal_extent",
+                            "propertyID": "https://goosocean.org/document/17514"
+                        },
+                        "32": {
+                            "name": "Mangrove - Canopy cover",
+                            "id": "mangrove_canopy_cover",
+                            "propertyID": "https://goosocean.org/document/17514"
+                        },
+                        "33": {
+                            "name": "Mangrove - Mangrove species composition",
+                            "id": "mangrove_species_composition",
+                            "propertyID": "https://goosocean.org/document/17514"
+                        },
+                        "34": {
+                            "name": "Mangrove - Mangrove species zonation",
+                            "id": "mangrove_species_zonation",
+                            "propertyID": "https://goosocean.org/document/17514"
+                        },
+                        "35": {
+                            "name": "Macroalgae - Canopy percent cover",
+                            "id": "macroalgae_canopy_percent_cover",
+                            "propertyID": "https://goosocean.org/document/17515"
+                        },
+                        "36": {
+                            "name": "Macroalgae - Macroalgal stipe density",
+                            "id": "macroalgae_stipe_density",
+                            "propertyID": "https://goosocean.org/document/17515"
+                        },
+                        "37": {
+                            "name": "Macroalgae - Canopy species diversity",
+                            "id": "macroalgae_species_diversity",
+                            "propertyID": "https://goosocean.org/document/17515"
+                        },
+                        "38": {
+                            "name": "Macroalgae - Areal extent",
+                            "id": "macroalgae_areal_extent",
+                            "propertyID": "https://goosocean.org/document/17515"
+                        },
+                        "39": {
+                            "name": "Fish - Fish abundance (number of individuals)",
+                            "id": "fish_abundance",
+                            "propertyID": "https://goosocean.org/document/17510"
+                        },
+                        "40": {
+                            "name": "Fish - Fish length frequency distribution",
+                            "id": "fish_length_frequency",
+                            "propertyID": "https://goosocean.org/document/17510"
+                        },
+                        "41": {
+                            "name": "Fish - Fish biomass (total weight)",
+                            "id": "fish_biomass",
+                            "propertyID": "https://goosocean.org/document/17510"
+                        },
+                        "42": {
+                            "name": "Fish - Fish ID / Species composition",
+                            "id": "fish_species_composition",
+                            "propertyID": "https://goosocean.org/document/17510"
+                        },
+                        "43": {
+                            "name": "Zooplankton - Biomass, total and/or by taxon",
+                            "id": "zooplankton_biomass",
+                            "propertyID": "https://goosocean.org/document/17509"
+                        },
+                        "44": {
+                            "name": "Zooplankton - Abundance by taxon",
+                            "id": "zooplankton_abundance",
+                            "propertyID": "https://goosocean.org/document/17509"
+                        },
+                        "45": {
+                            "name": "Zooplankton - Species composition",
+                            "id": "zooplankton_species_composition",
+                            "propertyID": "https://goosocean.org/document/17509"
                         }
                     }
                 },
@@ -520,7 +609,7 @@
         },
         "measurementTechnique": {
             "name": "Methodologies",
-            "description": "What types of Measurement/Observing Platforms are used in the project? Select all that apply.",
+            "description": "What types of Measurement/Observing Platforms are used in the project? Select all that apply. Those listed are based on categories of different platform types.",
             "fields": {
                 "measurement_platforms": {
                     "name": "Measurement Platforms",
@@ -533,79 +622,84 @@
                             "id": "none",
                             "propertyID": ""
                         },
-                        "Platform": {
-                            "name": "Platform",
-                            "id": "platform",
+                        "AutoVehSubSurf": {
+                            "name": "Autonomous vehicles: sub-surface",
+                            "id": "AVsub_surface",
+                            "propertyID": "http://vocab.nerc.ac.uk/collection/L06/current/25/"
+                        },
+                        "AutoVehSurf": {
+                            "name": "Autonomous vehicles: surface",
+                            "id": "AVsurface",
+                            "propertyID": "http://vocab.nerc.ac.uk/collection/L06/current/3B/"
+                        },
+                        "Autonomous Vehicles: surface - profilers": {
+                            "name": "Autonomous vehicles: surface - profilers",
+                            "id": "AVsurf_prof",
                             "propertyID": ""
                         },
-                        "Ship": {
-                            "name": "Ship",
-                            "id": "ship",
-                            "propertyID": "https://vocab.nerc.ac.uk/collection/L06/current/30/"
+                        "Autonomous: Animal based": {
+                            "name": "Autonomous: animal based",
+                            "id": "animal",
+                            "propertyID": "http://vocab.nerc.ac.uk/collection/L06/current/70/"
                         },
-                        "3": {
-                            "name": "Airplane",
-                            "id": "airplane",
-                            "propertyID": "http://vocab.nerc.ac.uk/collection/L06/current/62/"
-                        },
-                        "4": {
-                            "name": "Satellite",
-                            "id": "satellite",
-                            "propertyID": "https://vocab.nerc.ac.uk/collection/L06/current/68/"
-                        },
-                        "5": {
-                            "name": "Floats",
+                        "Autonomous Floats": {
+                            "name": "Autonomous floats",
                             "id": "floats",
-                            "propertyID": "https://vocab.nerc.ac.uk/collection/L06/current/47/"
+                            "propertyID": "http://vocab.nerc.ac.uk/collection/L06/current/47/"
                         },
-                        "6": {
-                            "name": "CTDs",
-                            "id": "ctds",
+                        "Autonomous: Other": {
+                            "name": "Autonomous: other",
+                            "id": "auto_other",
                             "propertyID": ""
                         },
-                        "7": {
-                            "name": "Saildrone",
-                            "id": "saildrone",
+                        "Fixed point: Fixed station": {
+                            "name": "Fixed point: Fixed station",
+                            "id": "fixed_fixed",
                             "propertyID": ""
                         },
-                        "8": {
-                            "name": "Drones",
-                            "id": "drones",
-                            "propertyID": "https://vocab.nerc.ac.uk/collection/L06/current/6D/"
+                        "Fixed point: Human based": {
+                            "name": "Fixed point: Human based",
+                            "id": "fixed_human",
+                            "propertyID": "http://vocab.nerc.ac.uk/collection/L06/current/71/"
                         },
-                        "9": {
-                            "name": "Gliders",
-                            "id": "gliders",
-                            "propertyID": "https://vocab.nerc.ac.uk/collection/L06/current/6A/"
-                        },
-                        "10": {
-                            "name": "Radar",
-                            "id": "radar",
+                        "Fixed point: other": {
+                            "name": "Fixed point: other",
+                            "id": "fixed_other",
                             "propertyID": ""
                         },
-                        "11": {
-                            "name": "River Gauge",
-                            "id": "river_gauge",
+                        "Ship-based: acoustics": {
+                            "name": "Ship-based: acoustics",
+                            "id": "ship_acoustics",
                             "propertyID": ""
                         },
-                        "12": {
-                            "name": "Stations",
-                            "id": "stations",
+                        "Ship-based: time series": {
+                            "name": "Ship-based: time series",
+                            "id": "ship_time",
                             "propertyID": ""
                         },
-                        "13": {
-                            "name": "Surface Drifters",
-                            "id": "surface_drifters",
-                            "propertyID": "https://vocab.nerc.ac.uk/collection/L06/current/42/"
+                        "Ship-based: bottom/demesal surveys": {
+                            "name": "Ship-based: bottom/demersal surveys",
+                            "id": "ship_surveys",
+                            "propertyID": ""
                         },
-                        "14": {
-                            "name": "Wave Gliders",
-                            "id": "wave_gliders",
-                            "propertyID": "https://goosocean.org/platforms"
+                        "Ship-based: other": {
+                            "name": "Ship-based: other",
+                            "id": "ship_other",
+                            "propertyID": ""
                         },
-                        "15": {
-                            "name": "Buoy",
-                            "id": "buoy",
+                        "Remote sensing: satellite": {
+                            "name": "Remote sensing: satellite",
+                            "id": "remote_satellite",
+                            "propertyID": "http://vocab.nerc.ac.uk/collection/L06/current/68/"
+                        },
+                        "Remote sensing: aerial": {
+                            "name": "Remote sensing: aerial",
+                            "id": "remote_aerial",
+                            "propertyID": "http://vocab.nerc.ac.uk/collection/L06/current/6D/"
+                        },
+                        "Remote sensing: other": {
+                            "name": "Remote sensing: other",
+                            "id": "remote_other",
                             "propertyID": ""
                         }
                     }
