@@ -10,7 +10,7 @@
     <form method="POST" action="/submit" onsubmit="return validateForm();">
         {{ form_html|safe }}
         
-        <button type="submit" class="submit-button" name="action" value="save_draft" id="save-draft-btn">Save Draft</button>
+        <button type="submit" class="submit-button-draft" name="action" value="save_draft" id="save-draft-btn">Save Draft</button>
         <button type='submit' class="submit-button" name='action' value='submit_to_github' id="submit_to_github">Submit Entry</button>
         <button type='submit' class="submit-button" name='action' value='print_json' id="print-json-btn">Print JSON</button>
         

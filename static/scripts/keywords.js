@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     `;
 
                     row.addEventListener("click", function () {
-                        addSelectedKeyword(item.label, item.id, item.source);
+                        addSelectedKeyword(item.label, item.id, item.source, item.obo_id);
                     });
 
                     resultsTable.appendChild(row);
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    function addSelectedKeyword(label, id, source) {
+    function addSelectedKeyword(label, id, source, obo_id) {
         // Check if the keyword is already added
         if (selectedKeywordsList.querySelector(`[data-id="${id}"]`)) return;
 
@@ -63,6 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
         keywordDiv.dataset.label = label;
         keywordDiv.dataset.id = id;
         keywordDiv.dataset.source = source;
+        keywordDiv.dataset.obo_id = obo_id || "";
 
         keywordDiv.innerHTML = `
             <button class="remove-keyword">Remove</button>
@@ -88,9 +89,10 @@ document.addEventListener("DOMContentLoaded", function () {
             const label = item.dataset.label;
             const id = item.dataset.id;
             const source = item.dataset.source;
+            const obo_id = item.dataset.obo_id;
 
             if (label && id) {
-                selectedKeywords.push({ label, id, source });
+                selectedKeywords.push({ label, id, source, obo_id });
             }
         });
 
@@ -119,6 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             uniqueResults.set(item.iri, {
                                 label: item.label,
                                 id: item.iri,       // Use the full URI (IRI)
+                                obo_id: item.obo_id, // OBO ID if available
                                 source: item.ontology_name || "Unknown" // Source is ontology name or "Unknown"
                             });
                         }
@@ -139,7 +142,7 @@ document.addEventListener("DOMContentLoaded", function () {
             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
             PREFIX dce: <http://purl.org/dc/elements/1.1/>
 
-            SELECT ?uri ?label
+            SELECT ?uri ?label ?identifier
             WHERE {
                 ?uri a skos:Concept ;
                     skos:prefLabel ?label  ;
@@ -169,6 +172,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return results.map(binding => ({
                     label: binding.label.value,
                     id: binding.uri.value,
+                    obo_id: binding.identifier ? binding.identifier.value : "",
                     source: "BODC NERC"
                 }));
             })

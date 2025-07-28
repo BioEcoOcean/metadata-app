@@ -9,7 +9,9 @@ from flask_session import Session
 import json
 import requests
 import re
+import csv
 from flask_caching import Cache
+from mappings import schema_field_mapping, actions_field_mapping, frequency_field_mapping
 from processMappings import map_form_to_schema
 from generateForm import generate_form
 from submitAction import process_submission_action
@@ -66,7 +68,9 @@ def index():
     #session["GITHUB_TOKEN"] = github.token["access_token"]
     if not user:
         # Fetch user info from GitHub if not in session
-        resp = github.get("/user")
+        print("Calling GitHub API on landing page...", flush=True) # debugging why hanging
+        resp = github.get("/user", timeout=10)
+        print("GitHub API responded", flush=True)
         if not resp.ok:
             return redirect(url_for('index'))
         
@@ -163,42 +167,6 @@ def home():
     
     return render_template("home.html", user=session.get("user"))
 
-def fetch_projects_from_github():
-    """Fetch the list of projects from the GitHub repository."""
-    try:
-        response = requests.get(GITHUB_API_JSONS)
-        response.raise_for_status()
-        contents = response.json()
-
-        projects = []
-        for item in contents:
-            if item['type'] == 'dir':
-                folder_name = item['name']
-                print("folder name: ", folder_name)
-                folder_api_url = f"{GITHUB_API_JSONS}/{folder_name}"
-                folder_response = requests.get(folder_api_url)
-                folder_response.raise_for_status()
-                folder_contents = folder_response.json()
-
-                # Find JSON files and extract 'url' field
-                for file_item in folder_contents:
-                    if file_item['name'].endswith(".json"):
-                        json_url = file_item['download_url']
-                        json_response = requests.get(json_url)
-                        json_response.raise_for_status()
-                        json_data = json_response.json()
-                        project_url = json_data.get("url", "URL not found")
-
-                        # Add project details
-                        projects.append({
-                            "name": folder_name,
-                            "project_link": project_url
-                        })
-        return projects
-    except requests.RequestException as e:
-        print(f"Error fetching data from GitHub: {e}")
-        return []
-
 @app.route("/logout")
 def logout():
     session.clear()
@@ -210,7 +178,9 @@ def get_github_issues():
         url = f"https://api.github.com/repos/{REPO_OWNER}/{GITHUB_REPO}/issues"
         headers = {"Authorization": f"token {GITHUB_TOKEN}"}
         params = {"labels": "metadata submission"}  # Filtering by label
-        response = requests.get(url, headers=headers, params=params)
+        print("Calling GitHub API for getting issues...", flush=True)
+        response = requests.get(url, headers=headers, params=params, timeout=10)
+        print("GitHub API responded", flush=True)
         if response.status_code == 200:
             return response.json()  # Return the list of issues
         else:
@@ -228,26 +198,12 @@ def handle_form_submission():
     elif request.method == "POST":
         return makeFormJson()
     return None
-
-def check_github_token_scopes(token, required_scopes):
-    url = "https://api.github.com/user"
-    headers = {"Authorization": f"token {token}"}
-    response = requests.get(url, headers=headers)
-    
-    if response.status_code == 200:
-        scopes = response.headers.get("X-OAuth-Scopes", "")
-        scopes_set = set(scopes.split(", "))
-        required_scopes_set = set(required_scopes)
-        return required_scopes_set.issubset(scopes_set)
-    else:
-        print(f"Failed to check token scopes: {response.status_code}")
-        return False
-    
+ 
 @app.route("/submit", methods=["POST"])
 def handle_submission():
     # Get the form data (action and schema_entry)
     action = request.form.get("action")
-    schema_entry = makeFormJson()  # Assuming the form data is a dictionary
+    schema_entry, actions_json, metadata_frequency = makeFormJson()  #pass the form output to makeFormJson function
     print("attempting to get issue number")
     print("session issue number: ", session.get('issue_number', 'N/A'))
     
@@ -260,13 +216,23 @@ def handle_submission():
     if not check_github_token_scopes(GITHUB_TOKEN, required_scopes):
         return jsonify({"success": False, "error": "GitHub token does not have the required scopes"}), 403
 
-
+    # Call the function to process the action, passing all 3 json objects
+    result = process_submission_action(
+        session.get('issue_number', None), 
+        action, 
+        schema_entry, actions_json, metadata_frequency,
+        GITHUB_API_URL, REPO_OWNER, GITHUB_REPO)
+    print("ACTION RESULT: ", result)
+    
+    # Handle print_json action
     if action == "print_json":
-        return render_template("print_json.html", schema_entry=json.dumps(schema_entry, indent=4))
+        return render_template("print_json.html", 
+        schema_entry=json.dumps(schema_entry, indent=4),
+        actions_json=json.dumps(actions_json, indent=4),
+        metadata_frequency=json.dumps(metadata_frequency, indent=4))
 
     # Handle save draft action
     if action == "save_draft":
-        result = process_submission_action(session.get('issue_number', None), action, schema_entry, GITHUB_API_URL, REPO_OWNER, GITHUB_REPO)
         if result.get("success"):
             message = result.get("message", "Draft saved successfully!")
             issue_url = result.get("issue_url")
@@ -274,12 +240,7 @@ def handle_submission():
         else:
             error_message = result.get("error", "An unexpected error occurred.")
             error_details = result.get("details", None)
-            return render_template("error.html", error=error_message, details=error_details)
-
-
-    # Call the function to process the action
-    result = process_submission_action(session.get('issue_number', None), action, schema_entry, GITHUB_API_URL, REPO_OWNER, GITHUB_REPO)
-    print("ACTION RESULT: ", result)
+            return render_template("error.html", error=error_message, details=error_details)   
 
     # Return the appropriate response based on the result from the function
     if action in ["submit_to_github", "update_github"]:  # Check if the action was a submission
@@ -291,11 +252,6 @@ def handle_submission():
             error_message = result.get("error", "An unexpected error occurred.")
             error_details = result.get("details", None)  # Include additional details if available
             return render_template("error.html", error=error_message, details=error_details)
-        # if isinstance(result, dict) and result.get("success"):
-        #     message = "Issue submitted successfully!" if action == "submit_to_github" else "Issue updated successfully!"
-        #     return render_template("success.html", message=message)
-        # else:
-        #     return result, 500
     else:
         return result
 
@@ -331,7 +287,9 @@ def update_entry():
             print("session issue number after setting it with real value: ", session.get('issue_number', 'N/A'))
             issue_url = f"https://api.github.com/repos/{REPO_OWNER}/{GITHUB_REPO}/issues/{issue_number}"
             headers = {"Authorization": f"token {GITHUB_TOKEN}"}
-            response = requests.get(issue_url, headers=headers)
+            #print("Calling GitHub API in update entry route...", flush=True) #debugging
+            response = requests.get(issue_url, headers=headers, timeout=10)
+            #print("GitHub API responded", flush=True)
             response_data = response.json()  # Debug: Inspect the full response from GitHub
             print(f"Response Data: {response_data}")
 
@@ -339,24 +297,34 @@ def update_entry():
                 # Parse the issue data
                 issue_data = response.json()
                 issue_body = issue_data["body"]
-                issue_body_cleaned = re.sub(r"^### Metadata Submission[\r\n]*\`*json", "", issue_body)
-                issue_body_cleaned = re.sub(r"\`*$", "", issue_body_cleaned)
+                json_blocks = extract_json_blocks(issue_body)
+                schema_entry = json_blocks.get("Metadata Submission")
+                actions_json = json_blocks.get("Actions JSON")
+                metadata_frequency = json_blocks.get("Metadata Frequency")
+                #issue_body_cleaned = re.sub(r"^### Metadata Submission[\r\n]*\`*json", "", issue_body)
+                #issue_body_cleaned = re.sub(r"\`*$", "", issue_body_cleaned)
                 #print(f"Issue Body: {issue_body}")  # Log the original body
                 #print(f"Cleaned Issue Body: {issue_body_cleaned}")  # Log the cleaned version
 
                 # Parse the body of the GitHub issue into a Python dictionary (assuming it's a JSON string)
-                try:
-                    issue_data_json = json.loads(issue_body_cleaned)  # Remove the header text if present
-                except json.JSONDecodeError as e:
-                    return jsonify({"success": False, "error": f"Error parsing JSON: {e}"})
+                #try:
+                #    issue_data_json = json.loads(issue_body_cleaned)  # Remove the header text if present
+                #except json.JSONDecodeError as e:
+                #    return jsonify({"success": False, "error": f"Error parsing JSON: {e}"})
 
-                print("Parsed JSON:", issue_data_json)  # Debug: Check the parsed JSON
+                #print("Parsed JSON:", issue_data_json)  # Debug: Check the parsed JSON
 
                 # Map the GitHub issue data to schema format
-                schema_entry = map_form_to_schema(issue_data_json)
+                #schema_entry = map_form_to_schema(issue_data_json)
+                mapped_schema_entry = map_form_to_schema(schema_entry, schema_field_mapping)
+                mapped_actions_entry = map_form_to_schema(actions_json, actions_field_mapping)
+                mapped_metadata_frequency = map_form_to_schema(metadata_frequency, frequency_field_mapping)
+                form_html = generate_form(prefilled_data=mapped_schema_entry,
+                    actions_data=mapped_actions_entry,
+                    frequency_data=mapped_metadata_frequency)
 
                 # Generate the form with the mapped data
-                form_html = generate_form(prefilled_data=schema_entry)
+                #form_html = generate_form(prefilled_data=schema_entry)
 
                 return render_template("update_entry.html", issues=filtered_issues, form_html=form_html, issue_number=issue_number)
             else:
@@ -364,7 +332,7 @@ def update_entry():
         else:
             return jsonify({"success": False, "error": "No issue selected."})
 
-@app.route("/submit_update", methods=["POST"])
+@app.route("/submit_update", methods=["POST"])  #Note to self: check why I have this route still? I thik it's included in submitAction
 def submit_update():
     updated_data = request.form.to_dict()  # Get form data as a dictionary
     issue_number = request.form.get("issue_number")  # Get the selected issue number
@@ -409,51 +377,58 @@ def submit_update():
         #return jsonify({"success": False, "error": response.json()}), response.status_code
 
 
-def create_issue(title, body):
-    """
-    Create a new issue in the GitHub repository.
-    """
-    GITHUB_TOKEN = session.get("github_oauth_token", {}).get("access_token")
-    headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github.v3+json"
-    }
-    issue_url = f"https://api.github.com/repos/{GITHUB_REPO}/issues"
+####### Helper functions ########
+def fetch_projects_from_github():
+    """Fetch the list of projects from the csv in the GitHub repository"""
+    csv_url = "https://raw.githubusercontent.com/BioEcoOcean/metadata-tracking-dev/refs/heads/main/data/bioeco_list.csv"
+    projects = []
+    try:
+        response = requests.get(csv_url, timeout=10)
+        response.raise_for_status()
+        decoded_content = response.content.decode('utf-8')
+        reader = csv.DictReader(decoded_content.splitlines())
+        
+        for row in reader:
+            # Expecting columns: 'name', 'project_link'
+            projects.append({
+                "name": row.get("Project Name", "Unnamed"),
+                "project_link": row.get("URL", "")
+            })
+        # Sort projects alphabetically by name (case-insensitive)
+        projects.sort(key=lambda x: x["name"].lower())
+        return projects
+    except Exception as e:
+        print(f"Error fetching or parsing CSV: {e}")
+        return []
 
-    data = {
-        "title": title,
-        "body": body,
-    }
-
-    response = requests.post(issue_url, json=data, headers=headers)
-    if response.status_code == 201:
-        return response.json()
-    else:
-        print(f"Failed to create issue: {response.status_code}, {response.text}")
-        return None
-
-def update_issue(issue_number, title, body):
-    """
-    Update an existing issue in the GitHub repository.
-    """
-    GITHUB_TOKEN = session.get("github_oauth_token", {}).get("access_token")
-    headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github.v3+json"
-    }
-    issue_url = f"https://api.github.com/repos/{GITHUB_REPO}/issues/{issue_number}"
-
-    data = {
-        "title": title,
-        "body": body,
-    }
-
-    response = requests.patch(issue_url, json=data, headers=headers)
+def check_github_token_scopes(token, required_scopes):
+    url = "https://api.github.com/user"
+    headers = {"Authorization": f"token {token}"}
+    print("Calling GitHub API...", flush=True) # debugging why hanging
+    response = requests.get(url, headers=headers, timeout=10)
+    print("GitHub API responded", flush=True)
+    
     if response.status_code == 200:
-        return response.json()
+        scopes = response.headers.get("X-OAuth-Scopes", "")
+        scopes_set = set(scopes.split(", "))
+        required_scopes_set = set(required_scopes)
+        return required_scopes_set.issubset(scopes_set)
     else:
-        print(f"Failed to update issue: {response.status_code}, {response.text}")
-        return None
+        print(f"Failed to check token scopes: {response.status_code}")
+        return False
+
+def extract_json_blocks(issue_body):
+    # Find all blocks between ```json ... ```
+    blocks = re.findall(r"### (.*?)\n```json\n(.*?)\n```", issue_body, re.DOTALL)
+    result = {}
+    for header, json_str in blocks:
+        try:
+            result[header.strip()] = json.loads(json_str)
+        except Exception as e:
+            result[header.strip()] = None
+    return result
+
+
 
 
 if __name__ == "__main__":

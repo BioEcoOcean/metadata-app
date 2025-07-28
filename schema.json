@@ -5,6 +5,21 @@
     },
     "@type": "Project",
     "@id": "link-to-json-placeholder",
+    "description": "This is backend mapping of values for the metadata schema. It is used to populate dropdowns and other fields in the metadata form and make sure correct identifiers are included in the produced JSON file",
+    "identifier_types": {
+        "DOI": {
+            "name": "DOI (Digital Object Identifier)",
+            "url": "https://registry.identifiers.org/registry/doi"
+            },
+        "ROR": {
+            "name": "ROR (Research Organization Registry)",
+            "url": "https://registry.identifiers.org/registry/ror"
+            },
+        "RAiD": {
+            "name": "RAiD (Research Activity Identifier)",
+            "url": "https://registry.identifiers.org/registry/raid"
+            }
+        },
     "categories_definition": {
         "license": {
             "name": "License",
@@ -109,11 +124,11 @@
                         "invert": {
                             "name": "Benthic invertebrate abundance and distribution",
                             "id": "invert",
-                            "propertyID": "https://goosocean.org/what-we-do/framework/essential-ocean-variables/"}
+                            "propertyID": "https://goosocean.org/document/36269"}
                     }
                 },
                 "other_eovs": {
-                    "name": "Other EOVs",
+                    "name": "Physical, Biochemical, & Cross-Disciplinary EOVs",
                     "description": "Select all relevant GOOS Physics, Biogeochemistry, and Cross-disciplinary EOVs",
                     "type": "dropdown",
                     "schema_mapping": "variableMeasured",
@@ -617,11 +632,6 @@
                     "type": "dropdown",
                     "schema_mapping": "measurementTechnique",
                     "options": {
-                        "None": {
-                            "name": "None",
-                            "id": "none",
-                            "propertyID": ""
-                        },
                         "AutoVehSubSurf": {
                             "name": "Autonomous vehicles: sub-surface",
                             "id": "AVsub_surface",

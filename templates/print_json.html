@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='form.css') }}">
+    <script src="/static/scripts/top-button.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism-tomorrow.min.css">
     <title>Printed JSON</title>
 </head>
@@ -13,7 +15,12 @@
     <div class="code-container">
         <button class="copy-button" onclick="copyToClipboard()">Copy to Clipboard</button>
         <pre>
-            <code id="json-code" class="language-json">{{ schema_entry }}</code>
+            <code id="json-code" class="language-json">{{ schema_entry }}
+            <br>
+            Actions JSON block: {{ actions_json }}
+            <br>
+            Metadata Frequency: {{ metadata_frequency }}
+        </code>
         </pre>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/prism.min.js"></script>
@@ -37,5 +44,7 @@
             window.getSelection().removeAllRanges(); // Clear the selection
         }
     </script>
+    <button id="toTopButton" onclick="scrollToTop()">To Top</button>
+    <button id="toBottomButton" onclick="scrollToBottom()">To Bottom</button>
 </body>
 </html>

@@ -1,67 +1,158 @@
 from flask import request
 import json
+from mappings import schema_field_mapping, actions_field_mapping, frequency_field_mapping
+from processMappings import map_form_to_schema
+
+with open("schema.json") as f:
+    form_schema = json.load(f)
 
 def clean_dict(data):
     return {k: v for k, v in data.items() if v}
 
-def makeFormJson(): 
+def makeFormJson():
     if request.method == "POST":
-        # Step 1: Collect and sanitize submitted form data
+        ########## Create the schema entry ##########
+        schema_entry = {
+            "@context": {
+                "@vocab": "https://schema.org/",
+                "geosparql": "http://www.opengis.net/ont/geosparql#"
+            },
+            "@type": "Project",
+        }
+
+        ########## Collect and sanitize submitted form data ##########
         submitted_data = request.form.to_dict(flat=False)  # Support multi-select fields
         sanitized_data = {}
         for key, value in submitted_data.items():
             sanitized_data[key] = value if isinstance(value, list) else value
+        print("san data: ", sanitized_data)
 
-        # Extract start and end dates from form submission
-        temporal_coverage_start = sanitized_data.get("temporal_coverage_start", [""])[0]
-        temporal_coverage_end = sanitized_data.get("temporal_coverage_end", [""])[0]
+        # Mappings
+        schema_entry = map_form_to_schema(sanitized_data, schema_field_mapping, base_type="Project")
+        actions_json = map_form_to_schema(sanitized_data, actions_field_mapping, base_type="Action")
+        metadata_frequency = map_form_to_schema(sanitized_data, frequency_field_mapping)
 
-        # Handle keywords dynamically as a list
-        # keywords = request.form.getlist("keywords")  # Collect all 'keywords' input values
-        # sanitized_data["keywords"] = keywords if keywords else []
-        sanitized_data["keywords"] = []
+        ## Build the @id
+        shortname = sanitized_data.get('shortname', [""])[0]
+        project_name = sanitized_data.get('project_name', [""])[0]
+        project_name_sanitized = (shortname or project_name).replace(" ", "_")
+        schema_entry["@id"] = f"https://raw.githubusercontent.com/BioEcoOcean/metadata-tracking-dev/refs/heads/main/jsonFiles/{project_name_sanitized}/{project_name_sanitized}.json"
+
+        ## Add legalName, name, url, description, frequency
+        schema_entry["legalName"] = sanitized_data.get("project_name", [""])[0]
+        if sanitized_data.get("shortname", [""])[0]:
+            schema_entry["name"] = sanitized_data.get("shortname", [""])[0]
+        schema_entry["url"] = sanitized_data.get("url", [""])[0]
+        if sanitized_data.get("description", [""])[0]:
+            schema_entry["description"] = sanitized_data.get("description", [""])[0]
+        #schema_entry["frequency"] = sanitized_data.get("frequency", ["Never"])[0] #need to figure out what this should be. frequency of sampling? but I also need an indication of how often metadata is updated for the sitemap so come back to
+
+        ## Handle the projid & identifier field
+        projid_type = request.form.get("projid_type", "")
+        identifier_types = form_schema.get("identifier_types", {})
+        projid_type_url = identifier_types.get(projid_type, {}).get("url", "")
+        def extract_identifier_value(projid_type, projid_url):
+            if projid_type == "DOI" and projid_url.startswith("https://doi.org/"):
+                return projid_url.replace("https://doi.org/", "")
+            elif projid_type == "RAiD" and projid_url.startswith("https://raid.org/"):
+                return projid_url.replace("https://raid.org/", "")
+            elif projid_type == "ROR" and projid_url.startswith("https://ror.org/"):
+                return projid_url.replace("https://ror.org/", "")
+            # fallback: try to get everything after the last slash
+            return projid_url.rstrip('/').split('/')[-1]
+        if sanitized_data.get("projid", [""])[0]:
+            projid_url = sanitized_data.get("projid", [""])[0]
+            value = extract_identifier_value(projid_type, projid_url)
+            schema_entry["identifier"] = { #will need to be updated with some logic for if it's a DOI or not
+                "@type": "PropertyValue",
+                "description": sanitized_data.get("projid_type", [""])[0],
+                "propertyID": projid_type_url,
+                "url": projid_url,
+                "value": value #need to add logic to get the value from the url
+            }
+
+        ## Get the license field
+        license_data = sanitized_data.get("license", [""])[0]
+        license_name, license_url = license_data.split("|") if license_data else (license_data, "")
+        schema_entry["publishingPrinciples"] = {
+            "@type": "CreativeWork",
+            "name": license_name,
+            "url": license_url
+            #"text": "blah"  # add this so that users can input their own license
+        }
+        ## Add time coverage
+        if sanitized_data.get("temporal_coverage_start", [""])[0]:
+            schema_entry["foundingDate"] = sanitized_data.get("temporal_coverage_start", [""])[0]
+        if sanitized_data.get("temporal_coverage_end", [""])[0]:
+            schema_entry["dissolutionDate"] = sanitized_data.get("temporal_coverage_end", [""])[0]
+
+        ## Handle the spatialCoverage field
+        area_name = sanitized_data.get("spatial_coverage_name", [""])[0]
+        area_id = sanitized_data.get("spatial_coverage_identifier", [""])[0]
+        south = sanitized_data.get("south", [""])[0]
+        west = sanitized_data.get("west", [""])[0]
+        north = sanitized_data.get("north", [""])[0]
+        east = sanitized_data.get("east", [""])[0]
+        if area_name and area_id:
+            area_served = {
+                "@type": "Place",
+                "name": area_name,
+                "identifier": area_id,
+            }
+            if south and west and north and east:
+                area_served["geo"] = {
+                        "@type": "GeoShape",
+                        "description": "Bounding box polygon with lat long (Y X) coordinate order.",
+                        "geosparql:asWKT": {
+                            "@type": "http://www.opengis.net/ont/geosparql#wktLiteral",
+                            "@value": f"<http://www.opengis.net/def/crs/OGC/1.3/CRS84> POLYGON(({west} {south}, {east} {south}, {east} {north}, {west} {north}, {west} {south} ))"
+                            }
+                }
+            schema_entry["areaServed"] = [area_served]
+        print("bounds: ", north, south, east, west)
+
+        ## Add keywords (select & EOVs)
+        keywords_list = []
         selected_keywords_json = request.form.get("selected-keywords-json")  # A hidden input containing the JSON array of selected keywords
         print("selected keywords json: ", selected_keywords_json)
         if selected_keywords_json:
             try:
                 selected_keywords = json.loads(selected_keywords_json)  # Parse the JSON string into a Python list of dictionaries
-                sanitized_data["keywords"] = [
+                keywords_list.extend([
                     {
-                        "@id": keyword.get("id"),
-                        "@type": "URL",
+                        "identifier": keyword.get("id"),
+                        "@type": "DefinedTerm",
+                        "termCode": keyword.get("obo_id"),  # Using identifier as the termCode
                         "name": keyword.get("label"),
                         "url": keyword.get("id")  # Using identifier as the URL
                     }
                     for keyword in selected_keywords
                     if keyword.get("id") and keyword.get("label")  # Ensure both id and label exist
-                ]
+                ])
             except json.JSONDecodeError:
-                # Handle JSON parsing error
-                sanitized_data["keywords"] = []
+                pass
 
-        # Handle the spatialCoverage field
-        if sanitized_data["spatial_coverage_name"] and sanitized_data["spatial_coverage_identifier"]:
-            sanitized_data["spatialCoverage"] = [{
-                "@type": "Place",
-                "name": sanitized_data["spatial_coverage_name"],
-                "identifier": sanitized_data["spatial_coverage_identifier"]
-            }]
-        # Get the license field from the form submission
-        license_data = sanitized_data.get("license", [""])[0]
-        license_name, license_url = license_data.split("|") if license_data else (license_data, "")
+        ## Handle EOVs as keywords
+        for eov_category in ['bioeco_eovs', 'other_eovs','ebvs', 'sub-variables']: # I removed 'ebvs' - do we need them in the form??
+            if eov_category in sanitized_data:
+                for eov in sanitized_data[eov_category]:
+                    name, propertyID = eov.split("|")
+                    propertyID_list = [pid.strip() for pid in propertyID.split(",") if pid.strip()]
+                    if name and propertyID_list:  # Ensure both fields have data
+                        keywords_list.append({
+                            "@type": "DefinedTerm",
+                            "name": name,
+                            "url": propertyID_list if len(propertyID_list) > 1 else propertyID_list[0],  # Use list if multiple, string if one
+                        })
+        if keywords_list:
+            schema_entry["keywords"] = keywords_list
 
-        #Get outputs
-        outputs = request.form.getlist("outputs")  # Collect all 'outputs' input values
-        sanitized_outputs = [output.strip() for output in outputs if output.strip()]
-        sanitized_data["outputs"] = sanitized_outputs if sanitized_outputs else []
-
-        
-        # Extract funding and funder details
+        ## Process funding and funder details
         funder_name = sanitized_data.get("funder_name", [])
         funder_url = sanitized_data.get("funder_url", [])
         funding_name = sanitized_data.get("funding_name", [])
         funding_identifier = sanitized_data.get("funding_identifier", [])
-        
+
         # Initialize the funding list
         funding = []
         # Iterate through funding information and create individual entries
@@ -86,152 +177,15 @@ def makeFormJson():
             if funding_entry["name"] or funding_entry["identifier"] or funding_entry["funder"]:
                 funding.append(funding_entry)
 
-        # for i in range(max(len(funder_name), len(funder_url))):
-        #     if funder_name or funder_url:
-        #         funders.append({
-        #             "@type": "FundingAgency",
-        #             "name": funder_name[i] if i < len(funder_name) else "",
-        #             "legalName": funder_name[i] if i < len(funder_name) else "",
-        #             "url": funder_url[i] if i < len(funder_url) else ""
-        #         })
-
-        # # Restructure the funding field
-        # funding = []
-        # for i in range(max(len(funding_name), len(funding_identifier))):
-        #     funding.append({
-        #         "@type": "MonetaryGrant",
-        #         "name": funding_name[i] if i < len(funding_name) else "",
-        #         "identifier": funding_identifier[i] if i < len(funding_identifier) else "",
-        #         "funder": funders if funders else None # Add the funders list
-        #     })
-
-        #Extract contact details
-        #sanitized_data["contact_names"] = request.form.getlist("contact_names")
-        #sanitized_data["contact_emails"] = request.form.getlist("contact_emails")
-        #sanitized_data["contact_roles"] = request.form.getlist("contact_roles")
-        #sanitized_data["contact_ids"] = request.form.getlist("contact_ids") if "contact_ids" in request.form else [] 
-
-
-        print("bounds: ", sanitized_data.get("north", [""])[0])
-        print("san data: ", sanitized_data)
-        
-        shortname = sanitized_data.get('shortname', [""])[0]
-        project_name = sanitized_data.get('project_name')[0]
-        project_name_sanitized = (shortname or project_name).replace(" ", "_")
-
-        ########## Step 2: Build schema_entry JSON with mappings ##########
-        schema_entry = {
-            "@context": {
-                "@vocab": "https://schema.org/",
-                "geosparql": "http://www.opengis.net/ont/geosparql#"
-            },
-            "@type": "Project",
-            "@id": f"https://raw.githubusercontent.com/BioEcoOcean/metadata-tracking-dev/refs/heads/main/jsonFiles/{project_name_sanitized}/{project_name_sanitized}.json",
-            "legalName": sanitized_data.get("project_name", [""])[0],
-            "url": sanitized_data.get("url", [""])[0],          
-            "frequency": sanitized_data.get("frequency", ["Never"])[0],
-            "keywords": sanitized_data.get("keywords", []),
-            "license": {
-                "@type": "CreativeWork",
-                "name": license_name,
-                "url": license_url
-            },
-            "measurementTechnique": [],
-        }
-
-        # Conditionally add fields if they are not blank
-        if sanitized_data.get("shortname", [""])[0]:
-            schema_entry["name"] = sanitized_data.get("shortname", [""])[0]
-        
-        if sanitized_data.get("description", [""])[0]:
-            schema_entry["description"] = sanitized_data.get("description", [""])[0]
-
-        if sanitized_data.get("projid", [""])[0]:
-            schema_entry["identifier"] = {
-                "@type": "PropertyValue",
-                "description": sanitized_data.get("project_name", [""])[0],
-                #"propertyID": sanitized_data.get("TBD", [""])[0],
-                "url": sanitized_data.get("projid", [""])[0],
-            },
-
-        # keywords = [keyword.strip() for keyword in sanitized_data.get("keywords", []) if keyword.strip()]
-        # if keywords:
-        #     schema_entry["keywords"] = keywords
-
-        if temporal_coverage_start and temporal_coverage_end:
-            schema_entry["temporalCoverage"] = f"{temporal_coverage_start}/{temporal_coverage_end}"
-        elif temporal_coverage_start:
-            schema_entry["temporalCoverage"] = temporal_coverage_start
-
-        if sanitized_data.get("spatial_coverage_name", [""])[0] and sanitized_data.get("spatial_coverage_identifier", [""])[0]:
-            area_served = {
-                    "@type": "Place",
-                    "name": sanitized_data.get("spatial_coverage_name", [""])[0],
-                    "identifier": sanitized_data.get("spatial_coverage_identifier", [""])[0],
-                }
-
-            # Check if all geo coordinates are present
-            south = sanitized_data.get("south", [""])[0]
-            west = sanitized_data.get("west", [""])[0]
-            north = sanitized_data.get("north", [""])[0]
-            east = sanitized_data.get("east", [""])[0]
-
-            if south and west and north and east:
-                area_served["geo"] = {
-                        "@type": "GeoShape",
-                        "description": "schema.org expects lat long (Y X) coordinate order. Box syntax is: miny minx maxy maxx",
-                        "box": f"{south} {west} {north} {east}"
-                }
-            schema_entry["areaServed"] = [area_served]
-        
-        if sanitized_outputs:
-            #schema_entry.setdefault("isRelatedTo", [])
-            schema_entry["isRelatedTo"] = sanitized_outputs
-
-        # if sanitized_data.get("funding", []):
-        #     schema_entry["funding"] = sanitized_data.get("funding", [])
         if funding:  # Only add to schema_entry if the funding list is not empty
             schema_entry["funding"] = funding
 
-
-        # Handle EOVs, and append to variableMeasured
-        #variable_measured = []
-        for eov_category in ['bioeco_eovs', 'other_eovs']: # I removed 'ebvs' - do we need them in the form??
-            if eov_category in sanitized_data:
-                for eov in sanitized_data[eov_category]:
-                    name, propertyID = eov.split("|")
-                    if name and propertyID:  # Ensure both fields have data
-                        schema_entry["keywords"].append({
-                            "@type": "DefinedTerm",
-                            "name": name,
-                            "url": [propertyID],
-                            "inDefinedTermSet": {
-                                "@type": "DefinedTermSet",
-                                "name": "Essential Ocean Variables",
-                                "description": "GOOS Essential Ocean Variables",
-                                "url": "https://goosocean.org/eov/"
-                            },
-                        })
-        # Add variableMeasured to schema_entry only if there are valid variables
-        #if variable_measured:
-         #   schema_entry["keywords"].append(variable_measured)   ##change this to keywords
-
-        # Step 4: Add measurementtechnique - platforms and SOPs, if applicable
-        if 'measurement_platforms' in sanitized_data:
-            for platform in sanitized_data['measurement_platforms']:
-                name, propertyID = platform.split("|")
-                schema_entry["measurementTechnique"].append({
-                    "@type": "PropertyValue",
-                    "name": name,
-                    "propertyID": propertyID
-                })
-
-        # Add contact points
+        ## Add contact points
         contact_names = request.form.getlist("contact_names")
         contact_emails = request.form.getlist("contact_emails")
-        contact_roles = request.form.getlist("contact_roles")
+        contact_types = request.form.getlist("contact_types")
         contact_ids = request.form.getlist("contact_ids")
-        num_contacts = max(len(contact_names), len(contact_emails), len(contact_roles), len(contact_ids))
+        num_contacts = max(len(contact_names), len(contact_emails), len(contact_types), len(contact_ids))
 
         contact_points = []
 
@@ -240,42 +194,158 @@ def makeFormJson():
             # Safely get each field for the current contact, defaulting to empty string if not available
             name = contact_names[i] if i < len(contact_names) else ""
             email = contact_emails[i] if i < len(contact_emails) else ""
-            role = contact_roles[i] if i < len(contact_roles) else ""
+            type = contact_types[i] if i < len(contact_types) else ""
             identifier = contact_ids[i] if i < len(contact_ids) else ""
 
             # Add the contact entry to the 'contactPoint' list
-            if any([name, email, role, identifier]):
+            if any([name, email, type, identifier]):
                 contact_points.append({
                     "@type": "ContactPoint",
+                    "contactType": type,
                     "name": name,
                     "email": email,
-                    "role": role,
-                    "identifier": identifier
+                    "url": identifier
                 })
 
             if contact_points:
                 schema_entry["contactPoint"] = contact_points
-       
-        # Add SOP URLs to measurementTechnique
-        sop_urls = [url.strip() for url in request.form.getlist("sops") if url.strip()]
-        sop_obps_values = request.form.getlist("sop_obps")  # Get the OBPs checkbox values
 
-        if sop_urls:
-            for i, sop in enumerate(sop_urls):
-                # Start building the SOP entry
-                sop_entry = {
-                    "@type": "CreativeWork",
-                    "url": sop
-                }
+        ## Get outputs
+        outputs = request.form.getlist("outputs")  # Collect all 'outputs' input values
+        outputs_urls = request.form.getlist("outputs_url")
+        sanitized_outputs = [
+            (name.strip(), url.strip())
+            for name, url in zip(outputs, outputs_urls)
+            if name.strip() or url.strip()
+        ]
+        sanitized_data["outputs"] = sanitized_outputs if sanitized_outputs else []
 
-                # Add isPartOf only if OBPs checkbox is "yes"
-                if i < len(sop_obps_values) and sop_obps_values[i].lower() == "yes":
-                    sop_entry["isPartOf"] = {
+        # Add outputs to schema_entry as a list of offers
+        if sanitized_outputs:
+            schema_entry["makesOffer"] = []
+            for offer_name, offer_url in sanitized_outputs:
+                schema_entry["makesOffer"].append({
+                    "@type": "Offer",
+                    "name": f"Distribution of {offer_name}",
+                    "itemOffered": {
                         "@type": "CreativeWork",
-                        "name": "Ocean Best Practices",
-                        "url": "https://www.oceanbestpractices.org/"
+                        "name": offer_name,
+                        "url": offer_url
                     }
+                })
+
+        ## Add platforms in potentialAction https://schema.org/potentialAction --> MOVED TO SEPARATE ACTIONS JSON
+        # schema_entry["potentialAction"] = []
+        # if 'measurement_platforms' in sanitized_data:
+        #     for platform in sanitized_data['measurement_platforms']:
+        #         name, propertyID = platform.split("|")
+        #         schema_entry["potentialAction"].append({
+        #             "@type": "Action",
+        #             "agent": {
+        #                 "@type": "Project",
+        #                 "@id": schema_entry["@id"],  # Pointing to the id of the project itself
+        #                 "name": project_name  # Pointing to the id of the project itself and where its json is
+        #             }, # Pointing to the id of the project itself and where its json is
+        #             "instrument": {
+        #                 "name": name,
+        #                 "identifier": propertyID
+
+        #             }
+
+        #         })
+
+        ## Add SOP URLs to --> potentialAction? https://schema.org/potentialAction
+        # sop_urls = [url.strip() for url in request.form.getlist("sops") if url.strip()]
+        # sop_obps_values = request.form.getlist("sop_obps")  # Get the OBPs checkbox values
+        # if sop_urls:
+        #     for i, sop in enumerate(sop_urls):
+        #         # Start building the SOP entry
+        #         sop_entry = {
+        #             "@type": "Action",
+        #             "agent": {
+        #                 "@type": "Project",
+        #                 "@id": schema_entry["@id"],  # Pointing to the id of the project itself
+        #                 "name": project_name  # Pointing to the id of the project itself and where its json is
+        #             },
+        #             "actionProcess": {
+        #                 "@type": "HowTo", #or CreativeWork?
+        #                 "url": sop
+        #             }
+        #         }
+
+        #         # Add isPartOf only if OBPs checkbox is "yes"
+        #         if i < len(sop_obps_values) and sop_obps_values[i].lower() == "yes":
+        #             sop_entry["actionProcess"]["isPartOf"] = {
+        #                 "@type": "Collection", #what type should this be?
+        #                 "name": "Ocean Best Practices",
+        #                 "url": "https://www.oceanbestpractices.org/"
+        #             }
+
+        #         # Append the SOP entry to the measurementTechnique
+        #         schema_entry["potentialAction"].append(sop_entry)
+
+        ########## Build the separate JSON for Actions ##########
+        actions_json = {
+            "@context": {
+                "@vocab": "https://schema.org/"
+            },
+            "@type": "Action",
+            "agent": {
+                "@type": "Project",
+                "@id": schema_entry["@id"],  # Pointing to the id of the project itself
+                "name": project_name  # Pointing to the id of the project itself and where its json is
+            }
+        }
+        ## Build the @id
+        actions_json["@id"] = f"https://raw.githubusercontent.com/BioEcoOcean/metadata-tracking-dev/refs/heads/main/jsonFiles/{project_name_sanitized}/{project_name_sanitized}_actions.json"
+
+        ## Add platforms to instrument
+        actions_json["instrument"] = []
+        if 'measurement_platforms' in sanitized_data:
+            for platform in sanitized_data['measurement_platforms']:
+                name, propertyID = platform.split("|")
+                actions_json["instrument"].append({
+                    "@type": "Thing",
+                    "name": name,
+                    "url": propertyID
+                })
+
+        ## Add SOP URLs to an actionProcess HowTo
+        actions_json["actionProcess"] = []
+        sops_url = request.form.getlist("sops_url")
+        sops_name = request.form.getlist("sops_name")
+        # Ensure all lists are the same length
+        num_sops = max(len(sops_url), len(sops_name))
+        for i in range(num_sops):
+            sop_entry = {
+                "@type": "HowTo",
+                "url": sops_url[i] if i < len(sops_url) else ""
+                }
+            if i < len(sops_name):
+                sop_entry["name"] = sops_name[i]
+            if sop_entry.get("url") or sop_entry.get("name"):
+                actions_json["actionProcess"].append(sop_entry)
+
+                # remove the OBPS as the link should work fine for connecting don't need to indicate
+                #Add isPartOf only if OBPs checkbox is "yes"  --> remove this block
+                # if i < len(sop_obps_values) and sop_obps_values[i].lower() == "yes":
+                #     sop_entry["actionProcess"]["isPartOf"] = {
+                #         "@type": "Collection", #what type should this be?
+                #         "name": "Ocean Best Practices",
+                #         "url": "https://www.oceanbestpractices.org/"
+                #     }
 
                 # Append the SOP entry to the measurementTechnique
-                schema_entry["measurementTechnique"].append(sop_entry)
-        return schema_entry  # Return the schema_entry object
+                #actions_json["actionProcess"].append(sop_entry)
+
+        # Add sampling frequency
+        if sanitized_data.get("sampling_frequency", [""])[0]:
+            actions_json["frequency"] = sanitized_data.get("sampling_frequency", [""])[0]
+
+        ########## Create small file for frequency for the sitemap ##########
+        metadata_frequency = {}
+        if sanitized_data.get("frequency", [""])[0]:
+            metadata_frequency["frequency"] = sanitized_data.get("frequency", ["Never"])[0]
+
+
+        return schema_entry, actions_json, metadata_frequency  # Return the schema_entry object

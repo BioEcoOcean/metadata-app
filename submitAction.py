@@ -5,11 +5,11 @@ import os
 from flask import jsonify, request, session, redirect, url_for
 
 # Function to handle the action based on the form submission
-def process_submission_action(issue_number, action, schema_entry, GITHUB_API_URL, REPO_OWNER, GITHUB_REPO): #i revmoed github_token from this so that it imports it
+def process_submission_action(issue_number, action, schema_entry, actions_json, metadata_frequency, GITHUB_API_URL, REPO_OWNER, GITHUB_REPO): 
     if action == "print_json":
         # Print JSON for testing
         print(schema_entry)
-        return jsonify({"success": True, "printed_json": schema_entry})
+        return jsonify({"success": True, "printed_json": schema_entry, "actions_json": actions_json, "metadata_frequency": metadata_frequency})
 
     GITHUB_TOKEN = session.get("github_oauth_token", {}).get("access_token")
     if not GITHUB_TOKEN:
@@ -20,8 +20,22 @@ def process_submission_action(issue_number, action, schema_entry, GITHUB_API_URL
 
     # Prepare issue title and body for GitHub submission
     issue_title = f"New Submission: {schema_entry.get('name') or schema_entry.get('legalName') or 'Untitled EOV Metadata Entry'}"
-    issue_body = f"### Metadata Submission\n\n```json\n{json.dumps(schema_entry, indent=4)}\n```"
-    labels = ["draft submission"] if action == "save_draft" else ["metadata submission"]
+    issue_body = (
+        "### Metadata Submission\n"
+        "```json\n"
+        f"{json.dumps(schema_entry, indent=2)}\n"
+        "```\n\n"
+        "### Actions JSON\n"
+        "```json\n"
+        f"{json.dumps(actions_json, indent=2)}\n"
+        "```\n\n"
+        "### Metadata Frequency\n"
+        "```json\n"
+        f"{json.dumps(metadata_frequency, indent=2)}\n"
+        "```\n"
+    )
+
+    labels = ["draft submission", "metadata submission"] if action == "save_draft" else ["metadata submission"]
 
     # Create payload for GitHub
     payload = {

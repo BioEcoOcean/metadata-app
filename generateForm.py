@@ -1,61 +1,78 @@
 import json
-# Load form schema
+import re
 
+def get_first_or_str(val):
+    # """Return a string representation of the first element if val is a list, set, or dict; else return val as string."""
+    if isinstance(val, list) and val:
+        return str(val[0])
+    elif isinstance(val, set) and val:
+        return str(next(iter(val)))
+    elif isinstance(val, dict) and val:
+        # If dict has a 'name' or 'url' key, use it; else use the first value
+        for key in ['name', 'url']:
+            if key in val:
+                return get_first_or_str(val[key])
+        return str(next(iter(val.values())))
+    return str(val)
 
-def generate_form(prefilled_data=None):
+def generate_form(prefilled_data=None, actions_data=None, frequency_data=None):
     with open("schema.json") as f:
         form_schema = json.load(f)
 
         form_html = ""
         prefilled_data = prefilled_data or {}
+        actions_data = actions_data or {}
+        frequency_data = frequency_data or {}
         print(f"Prefilled data: {json.dumps(prefilled_data, indent=4)}")
+        print(f"Actions data: {json.dumps(actions_data, indent=4)}")
+        print(f"Frequency data: {json.dumps(frequency_data, indent=4)}")
 
         form_html += """
         <h2>General Information</h2>
         """
-        # Project Name
+        ### Project Name ###
         form_html += f"""
         <h4><label for='project_name'>Data Producer Name:<span class="required">*</span><span class="info-circle" data-tooltip="Enter the full name or title of the data producer.">ⓘ</span></label></h4>
         <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('legalName', 'N/A')}</div>
         <input type='text' name='project_name' id='project_name' value="{prefilled_data.get('legalName', '')}" placeholder="Co-Creating Transformative Pathways to Biological and Ecosystem Ocean Observations" required><br><br>
         """
-        # Project Acronym
+        ### Project Acronym ###
         form_html += f"""
         <h4><label for='shortname'>Data Producer Acrynom:<span class="info-circle" data-tooltip="Enter the short name or acrynom of the data producer.">ⓘ</span></label></h4>
         <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('name', 'N/A')}</div>
         <input type='text' name='shortname' id='shortname' value="{prefilled_data.get('name', '')}" placeholder="BioEcoOcean"><br><br>
         """
-        # URL
+        ### URL ###
         form_html += f"""
         <label for='url'>URL:<span class="required">*</span><span class="info-circle" data-tooltip="Provide the URL to the homepage for the data producer.">ⓘ</span></label>
         <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('url', 'N/A')}</div>
         <input type='url' name='url' id='url' value="{prefilled_data.get('url', '')}" placeholder="https://bioecoocean.org/" required><br><br>
         """
-        #Project ID
+        ### Project ID ###
         form_html += f"""
         <label for='projid'>Data producer ID:<span class="info-circle" data-tooltip="Provide the ID for the entity producing EOV data, e.g. project, institution, programme, etc. IDs could include a Research Activity Identifier (RAiD), or Research Organization Registry identifier (ROR ID). If you do not currently have one it can be added later. The ID will facilitate connecting the data producer metadata with other outputs e.g. datasets in OBIS">ⓘ</span></label>
         <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('identifier', {}).get('url', 'N/A')}</div>
-        <input type='text' name='projid' id='projid' value="{prefilled_data.get('identifier', {}).get('url', 'N/A')}" placeholder="e.g. a RAiD, or ROR ID"><br><br>
+        <input type='text' name='projid' id='projid' value="{prefilled_data.get('identifier', {}).get('url', '')}" placeholder="e.g. a RAiD, or ROR ID"><br>
         """
+        identifier_types = form_schema.get("identifier_types", {})
+        projid_type_value = prefilled_data.get('identifier', {}).get('description', '')
 
-        # Description
+        form_html += "<a> Identifier Type:</a>"
+        form_html += "<select name='projid_type' id='projid_type'>"
+        form_html += "<option value='' disabled selected>Select type</option>"
+        for key, info in identifier_types.items():
+            selected = "selected" if projid_type_value == key else ""
+            form_html += f"<option value='{key}' {selected}>{info['name']}</option>"
+        form_html += "</select><br>"
+        form_html += "<a> If your desired type is not listed, please contact us to have it added.</a><br><br>"
+
+        ### Description ###
         form_html += f"""
         <label for='description'>Description: <span class="info-circle" data-tooltip="Provide a brief description of the project.">ⓘ</span></label>
         <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('description', 'N/A')}</div>
         <textarea name='description' id='description' maxlength="2000" placeholder="BioEcoOcean was funded by the European Union under grant agreement No. 101136748 with 5.7 million EUR to address this challenge. Over the course of 4 years, from February 2024 to January 2027, a consortium of 9 European partners aims to create, and demonstrate the value of, a globally applicable Blueprint for Integrated Ocean Science (BIOS).">{prefilled_data.get('description', '')}</textarea><br><br>
         """
-        #keywords section
-        # keywords = prefilled_data.get("keywords", [])
-        # keywords_display = ", ".join(keywords) if keywords else "N/A"
-        # form_html += "<label for='keywords'>Keywords: <span class='info-circle' data-tooltip='Enter relevant keywords for the project.'>ⓘ</span></label>"
-        # form_html += f"""
-        # <div class='previous'><strong>Previously entered: </strong>{keywords_display}</div>
-        # """
-        # form_html += "<div id='keywords-container'>"
-        # for keyword in keywords:
-        #     form_html += f'<input type="text" name="keywords" class="keyword-input" value="{keyword}" placeholder="Enter a keyword"><br>'
-        # form_html += "</div>"
-        # form_html += '<button type="button" onclick="addKeywordInput()">Add Another Keyword</button><br><br>'
+        ### Keywords Section ###
         keywords = prefilled_data.get("keywords", [])
         keywords_display = ", ".join([keyword["name"] for keyword in keywords if "name" in keyword]) if keywords else "N/A"
         form_html += f"""
@@ -92,22 +109,22 @@ def generate_form(prefilled_data=None):
         <br>
         """
 
-        # License section
+        ### License section ###
         license_field = form_schema.get("categories_definition", {}).get("license", None)
         if license_field:
-            license_value = prefilled_data.get("license", {}).get("name", 'N/A')
+            license_value = prefilled_data.get("publishingPrinciples", {}).get("name", 'N/A')
 
             # Show previously entered value above the field
-            form_html += f"<label for='license'>{license_field['name']}:<span class='required'>*</span><span class='info-circle' data-tooltip='Select the most appropriate license for the programme metadata.'>ⓘ</span></label>"
-            form_html += f"<p>Please select which Creative Commons license (<a href='https://creativecommons.org/share-your-work/cclicenses/'>https://creativecommons.org/share-your-work/cclicenses/</a>) you expect the programme metadata to be made available.</p>"
+            form_html += f"<label for='license'>{license_field['name']}:<span class='info-circle' data-tooltip='Select the most appropriate license for the data produced.'>ⓘ</span></label>"
+            form_html += f"<p>Please select which Creative Commons license (<a href='https://creativecommons.org/share-your-work/cclicenses/'>https://creativecommons.org/share-your-work/cclicenses/</a>) you expect the data produced by your entry to adhere to. Select as many as applicable.</p>"
             if license_value:
                 form_html += f"<div class='previous'><strong>Previously entered:</strong> {license_value}</div>"
             else:
                 form_html += "<div class='previous'><strong>Previously entered:</strong> N/A</div>"
 
             # License dropdown
-            form_html += "<select name='license' id='license' required>"
-            form_html += "<option value='' selected>Select option</option>"
+            form_html += "<select name='license' id='license' multiple size=4>"
+            #form_html += "<option value='' selected>Select option</option>"
 
             for option_key, option in license_field['options'].items(): #option_key is necessary to get the key from schema
                 selected = "selected" if option['name'] == license_value else ""
@@ -117,34 +134,53 @@ def generate_form(prefilled_data=None):
             # Handle the case where 'license' is missing
             form_html += "<p><strong>Error: License field is missing in the schema.</strong></p>"
 
-        #Update frequency
+        ### Sampling frequency ###
         form_html += f"""
-        <label for='frequency'>Update frequency:<span class="required">*</span><span class='info-circle' data-tooltip='Select the frequency you expect metadata to be updated.'>ⓘ</span></label>
-        <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('frequency', 'N/A')}</div>
+        <label for='sampling_frequency'>Sampling frequency:<span class='info-circle' data-tooltip='Select the frequency at which field sampling occurs.'>ⓘ</span></label>
+        <div class='previous'><strong>Previously entered:</strong> {actions_data.get('frequency', 'N/A')}</div>
+        <select name="sampling_frequency" id="sampling_frequency">
+            <option value="" disabled {'selected' if not actions_data.get('frequency', '') else ''}>Select an option</option>
+            <option value="never" {'selected' if actions_data.get('frequency', '') == 'once' else ''}>Never</option>
+            <option value="yearly" {'selected' if actions_data.get('frequency', '') == 'yearly' else ''}>Yearly</option>
+            <option value="asneeded" {'selected' if actions_data.get('frequency', '') == 'quarterly' else ''}>Quarterly</option>
+            <option value="monthly" {'selected' if actions_data.get('frequency', '') == 'monthly' else ''}>Monthly</option>
+            <option value="weekly" {'selected' if actions_data.get('frequency', '') == 'weekly' else ''}>Weekly</option>
+            <option value="daily" {'selected' if actions_data.get('frequency', '') == 'daily' else ''}>Daily</option>
+            <option value="hourly" {'selected' if actions_data.get('frequency', '') == 'hourly' else ''}>Hourly</option>
+            <option value="other" {'selected' if actions_data.get('frequency', '') == 'other' else ''}>Other</option>
+        </select>
+        <br><br>
+        """
+
+        ### Update frequency ###
+        form_html += f"""
+        <label for='frequency'>Metadata update frequency:<span class="required">*</span><span class='info-circle' data-tooltip='Select the frequency you expect metadata documented in this form to be updated.'>ⓘ</span></label>
+        <div class='previous'><strong>Previously entered:</strong> {frequency_data.get('frequency', 'N/A')}</div>
         <select name="frequency" id="frequency" required>
-            <option value="" disabled {'selected' if not prefilled_data.get('frequency', '') else ''}>Select an option</option>
-            <option value="never" {'selected' if prefilled_data.get('frequency', '') == 'never' else ''}>Never</option>
-            <option value="yearly" {'selected' if prefilled_data.get('frequency', '') == 'yearly' else ''}>Yearly</option>
-            <option value="monthly" {'selected' if prefilled_data.get('frequency', '') == 'monthly' else ''}>Monthly</option>
-            <option value="weekly" {'selected' if prefilled_data.get('frequency', '') == 'weekly' else ''}>Weekly</option>
-            <option value="daily" {'selected' if prefilled_data.get('frequency', '') == 'daily' else ''}>Daily</option>
-            <option value="hourly" {'selected' if prefilled_data.get('frequency', '') == 'hourly' else ''}>Hourly</option>
-            <option value="asneeded" {'selected' if prefilled_data.get('frequency', '') == 'asneeded' else ''}>As Needed</option>
+            <option value="" disabled {'selected' if not frequency_data.get('frequency', '') else ''}>Select an option</option>
+            <option value="never" {'selected' if frequency_data.get('frequency', '') == 'never' else ''}>Never</option>
+            <option value="asneeded" {'selected' if frequency_data.get('frequency', '') == 'asneeded' else ''}>As Needed</option>
+            <option value="yearly" {'selected' if frequency_data.get('frequency', '') == 'yearly' else ''}>Yearly</option>
+            <option value="monthly" {'selected' if frequency_data.get('frequency', '') == 'monthly' else ''}>Monthly</option>
+            <option value="weekly" {'selected' if frequency_data.get('frequency', '') == 'weekly' else ''}>Weekly</option>
+            <option value="daily" {'selected' if frequency_data.get('frequency', '') == 'daily' else ''}>Daily</option>
+            <option value="hourly" {'selected' if frequency_data.get('frequency', '') == 'hourly' else ''}>Hourly</option>
         </select>
         """
         form_html += "<hr style='border: none; border-bottom: dashed 2px #002366; '>"
 
-        # Contact Information
+        ### Contact Information ###
+        # Note to self add a flex box so I can add labels to the input boxes
         form_html += f"""
         <label for='contact_name'>
             <h2>Programme Contacts:<span class="required">*</span>
-            <span class="info-circle" data-tooltip="Provide contact information for your project. Can be for individual person or organizational contact information.">ⓘ</span>
+            <span class="info-circle" data-tooltip="Provide contact information for your entry. Can include helpdesk emails, contact pages, or individual or organizational contact information. URLs can link to support or contact pages.">ⓘ</span>
             </h2></label>
-        <div class='previous'><strong>Previously entered:</strong> 
-        Names: {", ".join(prefilled_data.get('contactPoint', {}).get('name', 'N/A')) if prefilled_data.get('contactPoint', {}).get('name') else "N/A"}; 
-        Emails: {", ".join(prefilled_data.get('contactPoint', {}).get('email', 'N/A')) if prefilled_data.get('contactPoint', {}).get('email') else "N/A"};
-        Roles: {", ".join(prefilled_data.get('contactPoint', {}).get('role', 'N/A')) if prefilled_data.get('contactPoint', {}).get('role') else "N/A"};
-        Identifiers: {", ".join(prefilled_data.get('contactPoint', {}).get('identifier', 'N/A')) if prefilled_data.get('contactPoint', {}).get('identifier') else "N/A"}
+        <div class='previous'><strong>Previously entered:</strong>
+        Type: {", ".join(prefilled_data.get('contactPoint', {}).get('contactType', 'N/A')) if prefilled_data.get('contactPoint', {}).get('contactType') else "N/A"};
+        Names: {", ".join(prefilled_data.get('contactPoint', {}).get('name', 'N/A')) if prefilled_data.get('contactPoint', {}).get('name') else "N/A"};
+        Email: {", ".join(prefilled_data.get('contactPoint', {}).get('email', 'N/A')) if prefilled_data.get('contactPoint', {}).get('email') else "N/A"};
+        URL: {", ".join(prefilled_data.get('contactPoint', {}).get('url', 'N/A')) if prefilled_data.get('contactPoint', {}).get('url') else "N/A"}
          </div>
 
         """
@@ -164,8 +200,8 @@ def generate_form(prefilled_data=None):
                 contact = {
                     'name': contacts.get('name', [])[i] if i < len(contacts.get('name', [])) else "",
                     'email': contacts.get('email', [])[i] if i < len(contacts.get('email', [])) else "",
-                    'role': contacts.get('role', [])[i] if i < len(contacts.get('role', [])) else "",
-                    'identifier': contacts.get('identifier', [])[i] if i < len(contacts.get('identifier', [])) else ""
+                    'contactType': contacts.get('contactType', [])[i] if i < len(contacts.get('contactType', [])) else "",
+                    'url': contacts.get('url', [])[i] if i < len(contacts.get('url', [])) else ""
                 }
                 contact_list.append(contact)
             contacts = contact_list
@@ -182,11 +218,11 @@ def generate_form(prefilled_data=None):
             for contact in contacts:
                 contact_names = contact.get("name", "")
                 contact_emails = contact.get("email", "")
-                contact_roles = contact.get("role", "")
-                contact_ids = contact.get("identifier", "")
+                contact_types = contact.get("contactType", "")
+                contact_urls = contact.get("url", "")
                 form_html += f"""
                 <script>
-                    addContactInput("{contact_names}", "{contact_emails}", "{contact_roles}", "{contact_ids}", true);
+                    addContactInput("{contact_names}", "{contact_emails}", "{contact_types}", "{contact_urls}", true);
                 </script>
                 """
         else:
@@ -208,20 +244,23 @@ def generate_form(prefilled_data=None):
         """
         form_html += "<hr style='border: none; border-bottom: dashed 2px #002366; '>"
 
-        #Coverage
+        ### Coverage ###
         form_html += "<h2>Coverage</h2>"
-        #Temporal coverage
+        
+        # Temporal coverage
         form_html += f"""
         <h3><label for='temporal_coverage'>Temporal Coverage:<span class="info-circle" data-tooltip="Specify the date range for the project.">ⓘ</span></label></h3>
-        <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('temporalCoverage', 'N/A')}</div>
+        <div class='previous'><strong>Previously entered:</strong>
+            Start: {prefilled_data.get('foundingDate', 'N/A')},
+            End: {prefilled_data.get('dissolutionDate', 'N/A')}</div>
         <div class="flex-col" style="max-width:600px;">
             <div class="flex-row">
                 <b>Start date: </b> <input type='date' name='temporal_coverage_start' id='temporal_coverage_start'
-                    value="{prefilled_data.get('temporalCoverage', '').split('/')[0] if prefilled_data.get('temporalCoverage') else ''}" >
+                    value="{prefilled_data.get('foundingDate', '') }" >
             </div>
             <div class="flex-row">
                 <b>End  date: </b> <input type='date' name='temporal_coverage_end' id='temporal_coverage_end'
-                    value="{prefilled_data.get('temporalCoverage', '').split('/')[1] if prefilled_data.get('temporalCoverage') else ''}" >
+                    value="{prefilled_data.get('dissolutionDate', '')}" >
             </div>
         </div><br>
         """
@@ -256,17 +295,33 @@ def generate_form(prefilled_data=None):
         <button type="button" onclick="clearMarineRegions()">Clear Location</button>
         <br><br>
         """
+        wkt_value = prefilled_data.get('areaServed', {}).get("geo", {}).get("geosparql:asWKT", {}).get("@value", "")
+        print("Raw WKT:", wkt_value)
 
-        boundingcoords = {prefilled_data.get('areaServed', {}).get("geo", {}).get("box", '')}
-        if isinstance(boundingcoords, set):
-            # Extract the string from the set
-            boundingcoords = next(iter(boundingcoords))
-        print("coords :", boundingcoords)
-        coordinates = boundingcoords.split(" ") # Split the string into four parts
-        south = coordinates[0] if len(coordinates) > 0 else ""
-        west = coordinates[1] if len(coordinates) > 1 else ""
-        north = coordinates[2] if len(coordinates) > 2 else ""
-        east = coordinates[3] if len(coordinates) > 3 else ""
+        # Extract just the POLYGON coordinates string
+        match = re.search(r'POLYGON\s*\(\((.*?)\)\)', wkt_value)
+        coords_raw = match.group(1) if match else ""
+        print("Extracted POLYGON coords:", coords_raw)
+
+        coordinates = []
+        if coords_raw:
+            for pair in coords_raw.split(","):
+                lon_str, lat_str = pair.strip().split()
+                lon, lat = float(lon_str), float(lat_str)
+                coordinates.append((lat, lon))  # (lat, lon)
+
+        # Extract bounding box values
+        if coordinates:
+            lats = [lat for lat, lon in coordinates]
+            lons = [lon for lat, lon in coordinates]
+            north = max(lats)
+            south = min(lats)
+            east = max(lons)
+            west = min(lons)
+        else:
+            north = south = east = west = ""
+
+        print("Bounding box:", north, south, east, west)
 
         form_html += f"""
         <a>Draw Bounding Area</a>
@@ -278,14 +333,14 @@ def generate_form(prefilled_data=None):
                     <input type="text" id="north" name="north" value="{north}">
                 </div>
                 <div class="flex-col">
-                    <label for="south" id="miny">South (min latitude):</label>
-                    <input type="text" id="south" name="south" value="{south}">
+                    <label for="east" id="maxx">East (max longitude):</label>
+                    <input type="text" id="east" name="east" value="{east}">
                 </div>
             </div>
             <div class="flex-row">
                 <div class="flex-col">
-                    <label for="east" id="maxx">East (max longitude):</label>
-                    <input type="text" id="east" name="east" value="{east}">
+                    <label for="south" id="miny">South (min latitude):</label>
+                    <input type="text" id="south" name="south" value="{south}">
                 </div>
                 <div class="flex-col">
                     <label for="west" id="minx">West (min longitude):</label>
@@ -300,141 +355,211 @@ def generate_form(prefilled_data=None):
         """
         form_html += "<hr style='border: none; border-bottom: dashed 2px #002366; '>"
 
-        # EOVs and Variables
-        def format_special_category_values(prefilled_data, category_key):
-            """
-            Handles special formatting for `variableMeasured` and `measurementTechnique`.
-            """
-            if category_key in prefilled_data:
-                items = prefilled_data[category_key]
-                return ", ".join([item["name"] for item in items if "name" in item]) if items else "N/A"
-            return "N/A"
-        def process_fields(fields, prefilled_data, category_value):
-            """
-            Processes fields within a category and generates the HTML for them.
-            """
+        ### EOVs and Variables ###
+        # Need to get the EOV names from the schema to cross reference with form output. Will use this to prepopulate checkboxes
+        def extract_eov_groups(form_schema):
+            fields = form_schema["categories_definition"]["variable_measured"]["fields"]
+            bioeco_eovs = set(option["name"] for option in fields.get("bioeco_eovs", {}).get("options", {}).values())
+            other_eovs = set(option["name"] for option in fields.get("other_eovs", {}).get("options", {}).values())
+            subvars = set(option["name"] for option in fields.get("sub-variables", {}).get("options", {}).values())
+            ebvs = set(option["name"] for option in fields.get("ebvs", {}).get("options", {}).values())
+            return bioeco_eovs, other_eovs, subvars, ebvs
+        bioeco_eovs, other_eovs, subvars, ebvs = extract_eov_groups(form_schema)
+
+        # Build selected sets for each group
+        keywords = prefilled_data.get("keywords", [])
+        selected_bioeco = [kw["name"] for kw in keywords if kw.get("name") in bioeco_eovs]
+        selected_other = [kw["name"] for kw in keywords if kw.get("name") in other_eovs]
+        selected_subvars = [kw["name"] for kw in keywords if kw.get("name") in subvars]
+        selected_ebvs = [kw["name"] for kw in keywords if kw.get("name") in ebvs]
+        selected_eov_names = set(selected_bioeco + selected_other + selected_subvars + selected_ebvs)
+
+        def process_fields(fields, prefilled_data):
             html = ""
             for field_key, field in fields.items():
-                value = prefilled_data.get(field_key, [])
                 if "options" in field:  # Checkbox handling
+                    if field_key == "bioeco_eovs":
+                        prev = ', '.join(selected_bioeco) or 'N/A'
+                        html += f"<div class='previous'><strong>BioEco EOVs previously entered:</strong> {prev}</div>"
+                    elif field_key == "other_eovs":
+                        prev = ', '.join(selected_other) or 'N/A'
+                        html += f"<div class='previous'><strong>Other EOVs previously entered:</strong> {prev}</div>"
+                    elif field_key == "sub-variables":
+                        prev = ', '.join(selected_subvars) or 'N/A'
+                        html += f"<div class='previous'><strong>Sub-variables previously entered:</strong> {prev}</div>"
+                    elif field_key == "ebvs":
+                        prev = ', '.join(selected_ebvs) or 'N/A'
+                        html += f"<div class='previous'><strong>EBVs previously entered:</strong> {prev}</div>"
+
                     html += f"<label for='{field_key}'><h4>{field.get('name', 'Unknown Field')}</h4></label>"
 
                     # Ensure category_value is a list if it's a string
-                    category_value_list = category_value.split(", ") if isinstance(category_value, str) else category_value
+                    #category_value_list = category_value.split(", ") if isinstance(category_value, str) else category_value
                     # Create a scrollable div for checkboxes
                     html += f"<div class='checkbox-container'>"
-
-                    # --- Sort options alphabetically by name ---
                     sorted_options = sorted(field["options"].items(), key=lambda item: item[1]["name"].lower())
-
                     for option_key, option in sorted_options:
                         # Check if the option name is in the list of previously entered values
-                        checked = "checked" if option["name"] in category_value_list else ""
+                        checked = "checked" if option["name"] in selected_eov_names else ""
                         property_id = option.get("propertyID", "")
                         if isinstance(property_id, list):
                             property_id = ", ".join(property_id)
                         option_value = f"{option['name']}|{property_id}"
                         html += f"<input type='checkbox' name='{field_key}' value='{option_value}' {checked}> {option['name']}<br>"
                     html += "</div><br>"
-                elif field.get("type") == "text":  # Text input handling
-                    html += f"<label for='{field_key}'>{field.get('name', 'Unknown Field')}</label>"
-                    html += f"<input type='text' name='{field_key}' id='{field_key}' value='{value}'>"
+                # elif field.get("type") == "text":  # Text input handling
+                #     html += f"<label for='{field_key}'>{field.get('name', 'Unknown Field')}</label>"
+                #     html += f"<input type='text' name='{field_key}' id='{field_key}' value='{value}'>"
             return html
 
-        # EOV Info and Other Dynamic Fields
+        # Render the EOV section
         form_html += "<h2>EOV info<span class='info-circle' data-tooltip='For each section below, check the variables measured'>ⓘ</span></h2>"
-        variables_measured = form_schema.get("categories_definition", {}).get("variable_measured", "N/A")
-        measurement_techniques = form_schema.get("categories_definition", {}).get("measurementTechnique", "N/A")
-        #print("measuremenets:", measurement_techniques)
+        eov_fields = form_schema["categories_definition"]["variable_measured"]["fields"]
+        form_html += process_fields(eov_fields, prefilled_data)
+        # filtered_categories = {
+        #     "variableMeasured": variables_measured,
+        #     "measurementTechnique": measurement_techniques,
+        #     **{key: val for key, val in form_schema.get("categories_definition").items() if key not in ["license", "variable_measured", "measurementTechnique"]}
+        # }
 
-        filtered_categories = {
-            "variableMeasured": variables_measured,
-            "measurementTechnique": measurement_techniques,
-            **{key: val for key, val in form_schema.get("categories_definition").items() if key not in ["license", "variable_measured", "measurementTechnique"]}
-        }
+        # # Iterate through categories and generate HTML
+        # for category_key, category in filtered_categories.items():
+        #     # Add category name and description
+        #     form_html += f"<h3>{category.get('name', 'Unknown Category')}<span class='info-circle' data-tooltip='{category.get('description', '')}'>ⓘ</span></h3>"
+        #     # Special handling for `variableMeasured` and `measurementTechnique`
+        #     if category_key in ["variableMeasured", "measurementTechnique"]:
+        #         category_value = format_special_category_values(prefilled_data, category_key)
+        #     else:
+        #         category_value = prefilled_data.get(category_key, "N/A")
+        #     # print("cat value: ", category_value) #debugging
 
-        # Iterate through categories and generate HTML
-        for category_key, category in filtered_categories.items():
-            # Add category name and description
-            form_html += f"<h3>{category.get('name', 'Unknown Category')}<span class='info-circle' data-tooltip='{category.get('description', '')}'>ⓘ</span></h3>"
-            # Special handling for `variableMeasured` and `measurementTechnique`
-            if category_key in ["variableMeasured", "measurementTechnique"]:
-                category_value = format_special_category_values(prefilled_data, category_key)
-            else:
-                category_value = prefilled_data.get(category_key, "N/A")
-            # print("cat value: ", category_value) #debugging
-            # Display previously entered values
-            form_html += f"<div class='previous'><strong>Previously entered:</strong> {category_value}</div>"
+        #     # Display previously entered values
+        #     fields = category.get("fields", {})
+        #     for field_key, field in fields.items():
+        #         # Determine which group this field belongs to and show the appropriate "previously entered"
+        #         if field_key == "bioeco_eovs":
+        #             prev = ', '.join(selected_bioeco) or 'N/A'
+        #             form_html += f"<div class='previous'><strong>BioEco EOVs previously entered:</strong> {prev}</div>"
+        #         elif field_key == "other_eovs":
+        #             prev = ', '.join(selected_other) or 'N/A'
+        #             form_html += f"<div class='previous'><strong>Other EOVs previously entered:</strong> {prev}</div>"
+        #         elif field_key == "sub-variables":
+        #             prev = ', '.join(selected_subvars) or 'N/A'
+        #             form_html += f"<div class='previous'><strong>Sub-variables previously entered:</strong> {prev}</div>"
+        #         elif field_key == "ebvs":
+        #             prev = ', '.join(selected_ebvs) or 'N/A'
+        #             form_html += f"<div class='previous'><strong>EBVs previously entered:</strong> {prev}</div>"
+        #     form_html += f"<div class='previous'><strong>Previously entered:</strong> {category_value}</div>"
 
-            # Process fields for this category
-            fields = category.get("fields", {})
-            form_html += process_fields(fields, prefilled_data,category_value)
+        #     # Process fields for this category
+        #     #fields = category.get("fields", {})
+        #     form_html += process_fields({field_key: field}, prefilled_data, category_value)
+
+        ### Platforms ###
+        instruments = actions_data.get("instrument", [])
+        selected_platforms = []
+        for instrument in instruments:
+            if instrument and "name" in instrument:
+                name = instrument.get("name", "")
+                url = instrument.get("url", "")
+                selected_platforms.append(f"{name}|{url}")
+
+        # Get platform options from schema
+        platform_options = form_schema["categories_definition"]["measurementTechnique"]["fields"]["measurement_platforms"]["options"]
+
+        form_html += "<h3>Measurement Platforms</h3>"
+        platforms_display = ', '.join([p.split('|')[0] for p in selected_platforms]) if selected_platforms else 'N/A'
+        form_html += f"<div class='previous'><strong>Previously entered platforms:</strong> {platforms_display}</div>"
+        form_html += "<div class='checkbox-container'>"
+        for key, option in platform_options.items():
+            value = f"{option['name']}|{option.get('propertyID', '')}"
+            checked = "checked" if value in selected_platforms else ""
+            form_html += f"<input type='checkbox' name='measurement_platforms' value='{value}' {checked}> {option['name']}<br>"
+        form_html += "</div><br>"
 
 
-        # SOP section
-        sops= prefilled_data.get("measurementTechnique", [])
-        # Extract URLs, skipping items without 'url'
-        sops_urls = [item["url"] for item in sops if isinstance(item, dict) and "url" in item]
-        sops_display = ", ".join(sops_urls) if sops_urls else "N/A"
-        form_html += "<label for='sops'><h4> Standard Operating Procedures <span class='info-circle' data-tooltip='Provide a link to any Methods or Standard Operating Procedures (SOPs) used. Check the box to indicate if the methods are listed as a best practice in Ocean Best Practices (OBPS)'>ⓘ</span></h4></label> "
-        "Provide a link to any Methods or Standard Operating Procedures used. Check the box to indicate if the methods are listed as a best practice in Ocean Best Practices (OBPS)<br>"
-        form_html += f"""
-        <div class="previous"><strong>Previously entered:</strong> {sops_display}</div>
-        """
+        ### SOP section ###
+        # use the prefilled potential_actions as above
+        sops = actions_data.get("actionProcess", [])
+        sop_entries = []
+        for sop in sops:
+            sop_name = sop.get("name", "")
+            sop_url = sop.get("url", "")
+            is_obps = "yes" if sop.get("isPartOf") else ""
+            sop_entries.append({"name": sop_name, "url": sop_url, "is_obps": is_obps})
+
+        form_html += "<label for='sops'><h4> Standard Operating Procedures <span class='info-circle' data-tooltip='Provide a link to any Methods or Standard Operating Procedures (SOPs) used. Check the box to indicate if the methods are listed as a best practice in Ocean Best Practices System (OBPS)'>ⓘ</span></h4></label> "
+        form_html += "<div class='previous'><strong>Previously entered SOPs: </strong>"
+        if sop_entries:
+            for sop in sop_entries:
+                sop_name = sop.get("name", "N/A")
+                sop_url = sop.get("url", "N/A")
+                form_html += f"Name: {sop_name} URL: {sop_url} "
+        else:
+            form_html += "N/A"
+        form_html += "</div>"
         form_html += "<div id='sops-container'>"
-        for sop_url in sops_urls:
-            form_html += f'<input type="text" name="sops" class="sops-input" value="{sop_url}" placeholder="Enter a link to an SOP"><br>'
+        if sop_entries:
+            for sop in sop_entries:
+                name = sop["name"]
+                url = sop["url"]
+                is_obps = sop["is_obps"]
+                form_html += f"""
+                <script>
+                    addSOPInput("{name}", "{url}", "{is_obps}");
+                </script>
+                """
         form_html += "</div>"
         form_html += '<button type="button" onclick="addSOPInput()">Add a SOP link</button><br>'
 
         form_html += "<hr style='border: none; border-bottom: dashed 2px #002366; '>"
 
-        #Ouputs section
-        outputs = prefilled_data.get("isRelatedTo", [])
-        outputs_display = ", ".join(outputs) if outputs else "N/A"
+        ### Outputs section ###
+        outputs = prefilled_data.get("makesOffer", [])
+        outputs_entries = []
+        if isinstance(outputs, list):
+            for offer in outputs:
+                item = offer.get("itemOffered", {})
+                offer_name = item.get("name", "N/A")
+                offer_url = item.get("url", "")
+                outputs_entries.append({"name": offer_name, "url": offer_url})
+        else:
+            outputs_entries = []
+
         form_html += "<label for='outputs'><h2>Outputs: <span class='info-circle' data-tooltip='Enter relevant outputs that are related to your entry.'>ⓘ</span></h2></label>"
         form_html += "<p>Please optionally provide the link to any relevant outputs that are associated with your entry. This may include products, portals, etc. If you have already linked any such outputs with ODIS or the BioEco Portal, you can provide them again here if you wish. Note that datasets published to OBIS would not need to be added here, and you can use the same data producer ID to ensure this entry is linked with OBIS data. </p>"
-        form_html += f"""
-        <div class='previous'><strong>Previously entered: </strong>{outputs_display}</div>
-        """
+        form_html += "<div class='previous'><strong>Previously entered: </strong>"
+        if outputs_entries:
+            for offer in outputs_entries:
+                offer_name = offer.get("name", "N/A")
+                offer_url = offer.get("url", "N/A")
+                form_html += f"Name: {offer_name} URL: {offer_url} "
+        else:
+            form_html += "N/A"
+        form_html += "</div>"
+
         form_html += "<div id='outputs-container'>"
-        for outputs in outputs:
-            form_html += f'<input type="text" name="outputs" class="outputs-input" value="{outputs}" placeholder="Enter the link of an output"><br>'
+        if outputs_entries:
+            for offer in outputs_entries:
+                name = offer["name"]
+                url = offer["url"]
+                form_html += f"""
+                <script>
+                    addOutputInput("{name}","{url}");
+                </script>
+            """
         form_html += "</div>"
         form_html += '<button type="button" onclick="addOutputInput()">Add an Output</button><br>'
 
         form_html += "<hr style='border: none; border-bottom: dashed 2px #002366; '>"
 
-        # Funding section
-        # form_html += "<h2>Funding Information</h2>"
-        # form_html += "<div>"
-        # form_html += f"""
-        #     <label for="funder_name">Funding Organization Name: <span class='info-circle' data-tooltip='Name of funding organization.'>ⓘ</span></label>
-        #     <div class="previous"><strong>Previously entered:</strong> {prefilled_data.get('funding',{}).get("funder",{}).get("name", 'N/A')}</div>
-        #     <input type="text" id="funder_name" name="funder_name" placeholder="Enter funder name" value="{prefilled_data.get('funding',{}).get("funder",{}).get("name", '')}"><br><br>
-
-        #     <label for="funder_url">Funding Organization URL: <span class='info-circle' data-tooltip='URL of funding organization.'>ⓘ</span></label>
-        #     <div class="previous"><strong>Previously entered:</strong> {prefilled_data.get('funding',{}).get("funder",{}).get('url', 'N/A')}</div>
-        #     <input type="url" id="funder_url" name="funder_url" placeholder="Enter funder URL" value="{prefilled_data.get('funding',{}).get("funder",{}).get('url', '')}"><br><br>
-
-        #     <label for="funding_name">Name of Funding Award: <span class='info-circle' data-tooltip='Name of the funding or award received, e.g. Horizon Europe'>ⓘ</span></label>
-        #     <div class="previous"><strong>Previously entered:</strong> {prefilled_data.get('funding',{}).get('name', 'N/A')}</div>
-        #     <input type="text" id="funding_name" name="funding_name" placeholder="Enter funding name" value="{prefilled_data.get('funding',{}).get('name', '')}"><br><br>
-
-        #     <label for="funding_identifier">Funding Identifier Number: <span class='info-circle' data-tooltip='The identifier associated with the funding, e.g. grant number.'>ⓘ</span></label>
-        #     <div class="previous"><strong>Previously entered:</strong> {prefilled_data.get('funding',{}).get('identifier', 'N/A')}</div>
-        #     <input type="text" id="funding_identifier" name="funding_identifier" placeholder="Enter funding identifier" value="{prefilled_data.get('funding',{}).get('identifier', '')}"><br>
-        # """
-        # form_html += "</div>"
-        # form_html += "<br>"
-
-        # Funding section
+        ### Funding section ###
         form_html += "<label for='funder-container'><h2>Funding Information <span class='info-circle' data-tooltip='Provide information about funding organizations and awards.'>ⓘ</span></h2></label>"
         form_html += "<p>Please provide information about the funding that supports your entry.</p>"
-        
+
         funding_data = prefilled_data.get("funding", [])
         form_html += f"""
-        <div class="previous"><strong>Previously entered:</strong> 
+        <div class="previous"><strong>Previously entered:</strong>
             Funder name: {", ".join(prefilled_data.get("funding", {}).get("funder", {}).get("name", [])) if prefilled_data.get("funding", {}).get("funder", {}).get("name") else "N/A"},
             Funder URL: {", ".join(prefilled_data.get("funding", {}).get("funder", {}).get("url", [])) if prefilled_data.get("funding", {}).get("funder", {}).get("url") else "N/A"},
             Funding award name: {", ".join(prefilled_data.get("funding", {}).get("name", [])) if prefilled_data.get("funding", {}).get("name") else "N/A"},
@@ -465,66 +590,30 @@ def generate_form(prefilled_data=None):
         print("Normalized funding data:", funding_data)
 
         # Generate the form fields for prefilled funding data
+        form_html += '<div id="funder-container"></div>'
         if funding_data:
             for funding in funding_data:
+                funder_name = funding.get('funder_name', '')
+                funder_url = funding.get('funder_url', '')
+                award_name = funding.get('name', '')
+                award_id = funding.get('identifier', '')
                 form_html += f"""
-                <div class="funding-container">
-                    <input type="text" name="funder_name" value="{funding.get('funder_name', '')}" placeholder="Enter name of funding organization">
-                    <input type="url" name="funder_url" value="{funding.get('funder_url', '')}" placeholder="Enter URL of funder">
-                    <input type="text" name="funding_name" value="{funding.get('name', '')}" placeholder="Enter name of the funding award">
-                    <input type="text" name="funding_identifier" value="{funding.get('identifier', '')}" placeholder="Enter the identifier of the funding award">
-                </div>
+                <script>
+                    window.addEventListener("DOMContentLoaded", function() {{
+                        addFunders("{funder_name}", "{funder_url}", "{award_name}", "{award_id}");
+                    }});
+                </script>
                 """
         else:
             form_html += """
-            """
-        # Add the dynamic container for new inputs
-        form_html += "<div id='funder-container'></div>"
-        if not funding_data:  # Only add the script if no prefilled data exists
-            form_html += """
             <script>
-                // Add one blank funding input set when the form is loaded
                 window.addEventListener("load", function() {
                     addFunders();
                 });
             </script>
             """
-        form_html += '<button type="button" onclick="addFunders()">Add a Funder</button><br><br>'
+        form_html += '<button type="button" onclick="addFunders()">Add a Funder</button><br>'
 
         form_html += "<hr style='border: none; border-bottom: dashed 2px #002366; '>"
-
-        eovs = prefilled_data.get("eovs", [])
-        eovs_display = ", ".join(eovs) if eovs else "N/A"
-        form_html += f"""
-        <label for='eovs-standard'>EOVs: <span class='info-circle' data-tooltip='Select relevant EOVs from controlled vocabulary collections.'>ⓘ</span></label>
-        This section is a work in progress to allow easier selection of EOVs.
-        Type in the box below to search for an EOV from a controlled vocabulary collection. This will query both The Environment Ontology (ENVO) and the BODC NERC Vocabulary Server.<br>
-        <div class='previous'><strong>Previously entered: </strong>{eovs_display}</div>
-        <div class="search-container">
-            <input type="text" id="eov-search" name="ontology_term" placeholder="Search for a term..." autocomplete="off">
-
-        </div>
-
-        <!-- Results Table -->
-        <table id="eov-table" class="scrollable-table" style="display:none;">
-            <thead>
-                <tr>
-                    <th>EOV</th>
-                    <th>URL</th>
-                    <th>Source</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Dynamically populated rows will go here -->
-            </tbody>
-        </table>
-
-        <p style="font-weight:bold">Selected EOVs:<p>
-        <div id="selected-eovs-list" class="selected-eovs-list">
-            <!-- Selected keywords will appear here -->
-        </div>
-        <input type="hidden" id="selected-eovs-json" name="selected-eovs-json" value="">
-        <br>
-        """
 
         return form_html

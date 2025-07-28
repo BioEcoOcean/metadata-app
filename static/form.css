@@ -97,6 +97,15 @@ button.submit-button {
     border-radius: 5px;
     cursor: pointer;
 }
+button.submit-button-draft {
+    background-color: #24a19b;
+    color: white;
+    padding: 0.75em;
+    font-size: 1.15rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
 button.back-button{
     background-color: rgb(201 106 9);
     color: #e6e1e1;
@@ -119,6 +128,9 @@ a:visited.button {
 }
 .submit-button:hover {
     background-color: #0b396b;
+}
+.submit-button-draft:hover {
+    background-color: #0b5e6b;
 }
 .back-button:hover {
     background-color: #a84f06;

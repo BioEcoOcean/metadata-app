@@ -1,5 +1,5 @@
 # A dictionary that maps form field names to the JSON schema field names in the GitHub issue, with transformation functions if needed
-from mappings import field_mapping
+from mappings import schema_field_mapping, actions_field_mapping, frequency_field_mapping
 
 def get_nested_value(data, field_path, default=None):
     """Helper function to get a value from a nested dictionary using a dot-separated path."""
@@ -19,14 +19,10 @@ def get_nested_value(data, field_path, default=None):
             return default
     return data
 
-def map_form_to_schema(form_data):
-    schema_entry = {
-        "@context": {
-            "@vocab": "https://schema.org/",
-            "geosparql": "http://www.opengis.net/ont/geosparql#"
-        },
-        "@type": "Project",
-    }
+def map_form_to_schema(form_data, field_mapping, base_type=None):
+    schema_entry = {}
+    if base_type:
+        schema_entry["@type"] = base_type
 
     for form_field, (schema_field, field_type) in field_mapping.items():
     # Split the schema field to handle nested fields
