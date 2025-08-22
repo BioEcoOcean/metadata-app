@@ -4,12 +4,12 @@
     justify-content: space-around;  /* Adjusts spacing between logos */
     align-items: center;  /* Vertically aligns logos */
     gap: 10px; /* Spacing between logos */
-    padding: 1px; /* Add padding around the container */
+    padding: 10px; /* Add padding around the container */
 }
 .logo-container img {
     max-width: 20%; /* Scale images within their container */
     height: auto; /* Maintain aspect ratio */
-    max-height: 100px; /* Set a maximum height for larger screens */
+    max-height: 80px; /* Set a maximum height for larger screens */
     flex: 1 1 auto; /* Make logos take up equal space and wrap */
     object-fit: contain; /* Ensure logos scale without distortion */
 }
@@ -80,6 +80,51 @@ hr {
     border-top: 3px solid #002366; /* Dark blue horizontal rule */
     margin: 20px 0;
 }
+.footer {
+    background-color: #002366;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    margin-top: 20px;
+}
+.footer, .footer p, .footer a {
+    color: white;
+    
+}
+.footer p {
+    font-size: 0.75em !important;
+}
+.footer-flex {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    max-width: 100%;
+}
+.footer-col {
+    flex: 1 1 0;
+    padding: 0 10px;
+    min-width: 0;
+    text-align: left;
+    word-break: break-word;
+}
+.footer-col:nth-child(1) {
+    flex: 0 0 10%;   /* First column: about 10% width */
+    max-width: 10%;
+}
+.footer-col:nth-child(2) {
+    flex: 0 0 20%;  
+    max-width: 20%;
+}
+.footer-col:nth-child(3) {
+    flex: 0 0 10%;   
+    max-width: 10%;
+}
+
 /* Hamburger Menu */
 .hamburger {
     display: none;

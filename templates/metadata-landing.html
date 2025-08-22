@@ -6,7 +6,7 @@
 
 <h1>Submit EOV Metadata</h1>
     <p>Fill in the form to provide metadata describing your Essential Ocean Variables (EOV) "data producer", which could include monitoring programmes, projects, institutions, etc. Submitting an entry via this application will allow it become visible in both the <a href="https://bioeco.goosocean.org/" target="_blank">GOOS BioEco Portal</a> and the Ocean Data and Information System (ODIS) / <a href="https://oceaninfohub.org/" target="_blank">Ocean Info Hub</a>. Note that as of August 2025 these connections are still a work in progress, as the BioEco Portal is being redesigned. You may still submit entries via this tool.</p>
-    <p>All information submitted via this form will become public.</p>
+    <p><b>All information submitted via this form will become public.</b></p>
     <p>Click the <b>"New entry"</b> button to create a new submission. Please do your best to provide as much information as possible. Required fields are marked with an asterisk *.</p>
     <p>Once submitted, your form entry will be converted into a JSON-LD format and submitted as a GitHub issue to the BioEcoOcean GitHub repository. You can preview the output by clicking the "Print JSON" button on the form page. To update an existing or draft entry, click the <b>"Update an entry"</b> button. When entries are updated, a date is added in a comment.</p>
     <p>You must have a GitHub account to use this tool as submissions are sent to the GitHub repository.
@@ -22,8 +22,8 @@
 
     <h2>Technical Details</h2>
     <p>As mentioned above, all submissions are stored in a GitHub repository as issues. Each submission is converted into JSON-LD format before being submitted as an issue. JSON-LD is a standard format for linked data. Three JSON files are created: one main one describing the data producer, one called "Action" to describe the sampling information (e.g. platform, frequency), and one small one to record the frequency of metadata update. Github actions are used to automate the processing of these submissions. Each entry is then stored in a specific folder within the jsonFiles directory. A single sitemap is generated that contains all the entries in the jsonFiles directory. The sitemap file is connected to ODIS and the Ocean Info Hub through the ODIS Catalgoue of Sources. The GOOS BioEco Portal will be directly connected with the output from this application.</p>
-    
-    <p>The app development is https://github.com/BioEcoOcean/metadata-app.</p>
+
+    <p>App development can be found <a href="https://github.com/BioEcoOcean/metadata-app" target="_blank">here</a>.</p>
     <p>For more information on the JSON-LD format, see the guidelines produced by ODIS <a href="https://book.odis.org/index.html" target="_blank">here</a>.</p>
 
     <h2>Data Producers Already Submitted</h2>
