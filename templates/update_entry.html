@@ -1,13 +1,13 @@
-{% extends "header_form.html" %}
+{% extends "layouts/header_form.html" %}
 
 {% block title %}Update Existing Entry{% endblock %}
 
 {% block content %}
-
+    <script src="{{ url_for('static', filename='scripts/keywords.js') }}"></script>
     <h1>Update Existing Metadata</h1>
     <button class="back-button"><a href="{{ url_for('dataproducer') }}" class="button">Back</a></button>
      <!-- Dropdown for selecting issues -->
-    <p>Please ensure all previously filled fields are filled in again before the form is submitted for updates. Fields left blank in a previous submission will be populated with placeholders.</p>
+    <p>Please ensure all previously filled fields are filled in again before the form is submitted for updates. This has been automatically completed for you in most cases. Fields left blank in a previous submission will be populated with placeholders.</p>
     <form method="POST" action="/update_entry">
         <label for="selected_issue">Select an Issue:</label>
         <select id="selected_issue" name="selected_issue">
@@ -28,7 +28,7 @@
                 <script src="/static/scripts/boundingmap.js"></script>
                 <script src="/static/scripts/marineregions.js"></script>
                 <script src="/static/scripts/form-validation.js"></script>
-                <script src="/static/scripts/keywords.js"></script>
+                
                 <button type="submit" class="submit-button-draft" name="action" value="save_draft" id="save-draft-btn">Save Draft</button>
                 <button type='submit' class="submit-button" name='action' value='update_github' id="update_github">Submit Updated Entry</button>
                 <button type='submit' class="submit-button" name='action' value='print_json' id="print-json-btn">Print JSON</button>

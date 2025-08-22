@@ -5,7 +5,10 @@ schema_field_mapping = {
     "description": ("description", str),
     "projid": ("identifier.url", str),
     "projid_type": ("identifier.description", str),
-    "license": ("publishingPrinciples.name", str), #need to update this to publishingPrinciples
+    "license": ("publishingPrinciples.name", str),
+    "datapolicy_name": ("publishingPrinciples.name", str),
+    "datapolicy_text": ("publishingPrinciples.text", str),
+    "datapolicy_url": ("publishingPrinciples.url", str),
     
     # Temporal coverage
     "temporal_coverage_start": ("foundingDate", str), 
@@ -42,7 +45,7 @@ actions_field_mapping = {
     # Actions: SOPs & platforms, sampling frequency
     "sops": ("actionProcess", list),
     "measurement_platforms": ("instrument", list),
-    "sampling_frequency": ("frequency", str),
+    "sampling_frequency": ("description", str),
 }
 frequency_field_mapping = {
     # Only fields for metadata_frequency

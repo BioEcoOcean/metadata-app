@@ -134,7 +134,7 @@ pre code.language-json {
     background-color: #2d2d2d; 
     text-align: right;
     align-items: flex-start;
-    width: 80%;
+    width: 100%;
 }
 .home-container {
     display: grid;

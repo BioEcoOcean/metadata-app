@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    function addSelectedKeyword(label, id, source, obo_id) {
+    window.addSelectedKeyword=function(label, id, source, obo_id) { // make function available globally
         // Check if the keyword is already added
         if (selectedKeywordsList.querySelector(`[data-id="${id}"]`)) return;
 
@@ -80,7 +80,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // Update hidden input when adding
         updateHiddenKeywordsInput();
     }
-
     function updateHiddenKeywordsInput() {
         const selectedKeywords = [];
         const keywordItems = selectedKeywordsList.querySelectorAll("div");

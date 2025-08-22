@@ -65,6 +65,70 @@
                         }
                     }
                 },
+        "frequency":{
+            "name": "Frequency of Data Collection",
+            "description": "Select the frequency of data collection for the programme.",
+            "allow_multiple": true,
+            "type": "dropdown",
+            "schema_mapping": "frequencyOfDataCollection",
+            "options":{
+                "daily": {
+                    "name": "daily",
+                    "id": "daily",
+                    "url": "http://vocab.nerc.ac.uk/collection/G17/current/002/"
+                },
+                "weekly": {
+                    "name": "weekly",
+                    "id": "weekly",
+                    "url": "http://vocab.nerc.ac.uk/collection/G17/current/003/"
+                },
+                "fortnightly": {
+                    "name": "fortnightly",
+                    "id": "fortnightly",
+                    "url": "http://vocab.nerc.ac.uk/collection/G17/current/004/"
+                },
+                "monthly": {
+                    "name": "monthly",
+                    "id": "monthly",
+                    "url": "http://vocab.nerc.ac.uk/collection/G17/current/005/"
+                },
+                "quarterly": {
+                    "name": "quarterly",
+                    "id": "quarterly",
+                    "url": "http://vocab.nerc.ac.uk/collection/G17/current/006/"
+                },
+                "biannually": {
+                    "name": "biannually",
+                    "id": "biannually",
+                    "url": "http://vocab.nerc.ac.uk/collection/G17/current/007/"
+                },
+                "annually": {
+                    "name": "annually",
+                    "id": "annually",
+                    "url": "http://vocab.nerc.ac.uk/collection/G17/current/008/"
+                },
+                "asNeeded": {
+                    "name": "as needed",
+                    "id": "asNeeded",
+                    "url": "http://vocab.nerc.ac.uk/collection/G17/current/009/"
+                },
+                "irregular": {
+                    "name": "irregular",
+                    "id": "irregular",
+                    "url": "http://vocab.nerc.ac.uk/collection/G17/current/010/"
+                },
+                "notPlanned": {
+                    "name": "not planned",
+                    "id": "notPlanned",
+                    "url": "http://vocab.nerc.ac.uk/collection/G17/current/011/"
+                },
+                "unknown": {
+                    "name": "unknown",
+                    "id": "unknown",
+                    "url": "http://vocab.nerc.ac.uk/collection/G17/current/012/"
+                }
+            }
+        },
         "variable_measured": {
             "name": "Variables Measured",
             "description": "Select the EOVs and EBVs measured in the project, as applicable. Select all that apply.",

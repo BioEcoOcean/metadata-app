@@ -19,6 +19,7 @@ from makeFormIntoJson import makeFormJson
 from datetime import datetime
 from helpers import set_flask_environment
 from werkzeug.middleware.proxy_fix import ProxyFix
+from dois import ObisDoi
 
 app = Flask(__name__)
 set_flask_environment(app=app)
@@ -162,8 +163,6 @@ def home():
         if github_token:
             session["GITHUB_TOKEN"] = github_token
     print("GITHUB_TOKEN from session:", github_token, flush=True)
-
-    
     
     return render_template("home.html", user=session.get("user"))
 
@@ -301,21 +300,8 @@ def update_entry():
                 schema_entry = json_blocks.get("Metadata Submission")
                 actions_json = json_blocks.get("Actions JSON")
                 metadata_frequency = json_blocks.get("Metadata Frequency")
-                #issue_body_cleaned = re.sub(r"^### Metadata Submission[\r\n]*\`*json", "", issue_body)
-                #issue_body_cleaned = re.sub(r"\`*$", "", issue_body_cleaned)
-                #print(f"Issue Body: {issue_body}")  # Log the original body
-                #print(f"Cleaned Issue Body: {issue_body_cleaned}")  # Log the cleaned version
-
-                # Parse the body of the GitHub issue into a Python dictionary (assuming it's a JSON string)
-                #try:
-                #    issue_data_json = json.loads(issue_body_cleaned)  # Remove the header text if present
-                #except json.JSONDecodeError as e:
-                #    return jsonify({"success": False, "error": f"Error parsing JSON: {e}"})
-
-                #print("Parsed JSON:", issue_data_json)  # Debug: Check the parsed JSON
 
                 # Map the GitHub issue data to schema format
-                #schema_entry = map_form_to_schema(issue_data_json)
                 mapped_schema_entry = map_form_to_schema(schema_entry, schema_field_mapping)
                 mapped_actions_entry = map_form_to_schema(actions_json, actions_field_mapping)
                 mapped_metadata_frequency = map_form_to_schema(metadata_frequency, frequency_field_mapping)
@@ -323,59 +309,100 @@ def update_entry():
                     actions_data=mapped_actions_entry,
                     frequency_data=mapped_metadata_frequency)
 
-                # Generate the form with the mapped data
-                #form_html = generate_form(prefilled_data=schema_entry)
-
                 return render_template("update_entry.html", issues=filtered_issues, form_html=form_html, issue_number=issue_number)
             else:
                 return jsonify({"success": False, "error": response.json()})
         else:
             return jsonify({"success": False, "error": "No issue selected."})
 
-@app.route("/submit_update", methods=["POST"])  #Note to self: check why I have this route still? I thik it's included in submitAction
-def submit_update():
-    updated_data = request.form.to_dict()  # Get form data as a dictionary
-    issue_number = request.form.get("issue_number")  # Get the selected issue number
-    GITHUB_TOKEN = session.get("github_oauth_token", {}).get("access_token")
-
-    # Map the form data to the schema format
-    schema_entry = makeFormJson(updated_data)  # Mapping form data to schema format
-
-    # Construct the GitHub issue URL and the payload to send
-    issue_url = f"https://api.github.com/repos/{REPO_OWNER}/{GITHUB_REPO}/issues/{issue_number}"
-    comments_url = f"https://api.github.com/repos/{REPO_OWNER}/{GITHUB_REPO}/issues/{issue_number}/comments"
-    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
-
-    # GitHub Payload includes the title and body, with the body containing the metadata as formatted JSON
-    payload = {
-        "title": f"Updated Submission: {updated_data.get('name', 'Unnamed Program')}",
-        "body": "### Metadata Submission\n\n" + json.dumps(schema_entry, indent=4)  # Send the mapped schema as part of the body
-    }
-
-    # Step 1: Update the issue with new data (PATCH request)
-    response = requests.patch(issue_url, json=payload, headers=headers)
-
-    # Check if the issue was updated successfully
-    if response.status_code == 200:
-        # Step 2: Add a comment to the issue (POST request)
-        comment_payload = {
-            "body": f"Entry updated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"  # Add a timestamp for the update
-        }
-        comment_response = requests.post(comments_url, json=comment_payload, headers=headers)
-
-        # Check if the comment was added successfully
-        if comment_response.status_code == 201:
-            issue_url = f"https://github.com/{REPO_OWNER}/{GITHUB_REPO}/issues/{issue_number}"
-            return render_template("success.html", message="Issue updated successfully!", issue_url=issue_url)
-        else:
-            error_details = comment_response.json()
-            return render_template("error.html", error="Failed to add update comment.", details=error_details)
-            #return jsonify({"success": False, "error": comment_response.json()}), comment_response.status_code
+@app.route('/generate_doi', methods=['POST'])
+def generate_doi():
+    data = request.json
+    doi_obj = ObisDoi()
+    
+    # Set basic info
+    doi_obj.title = data.get('title')
+    doi_obj.url = data.get('url')
+    
+    # Set creators info (now supports multiple)
+    creators_data = data.get('creators', [])
+    if creators_data:
+        doi_obj.creators = []
+        for creator in creators_data:
+            creator_entry = {
+                "name": creator.get('name'),
+                "nameType": creator.get('nameType', 'Organizational')
+            }
+            
+            # Add given/family names for Personal type
+            if creator.get('nameType') == 'Personal':
+                if creator.get('givenName'):
+                    creator_entry['givenName'] = creator.get('givenName')
+                if creator.get('familyName'):
+                    creator_entry['familyName'] = creator.get('familyName')
+            
+            doi_obj.creators.append(creator_entry)
     else:
-        error_details = response.json()
-        return render_template("error.html", error="Failed to update issue.", details=error_details)
-        #return jsonify({"success": False, "error": response.json()}), response.status_code
+        # Fallback to default OBIS creator if no creators provided
+        doi_obj.creators = [{
+            "name": "Ocean Biodiversity Information System (OBIS)",
+            "nameType": "Organizational",
+        }]
+    
+    # Set publisher
+    doi_obj.publisher = data.get('publisher', 'Ocean Biodiversity Information System (OBIS)')
+    
+    try:
+        result = doi_obj.reserve()
+        # DataCite returns the DOI in result['data']['id']
+        if 'data' in result and 'id' in result['data']:
+            return jsonify({'doi': result['data']['id']})
+        else:
+            return jsonify({'error': result}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
+# @app.route("/submit_update", methods=["POST"])  #Note to self: check why I have this route still? I thik it's included in submitAction so doesn't need to be included here anymore
+# def submit_update():
+#     updated_data = request.form.to_dict()  # Get form data as a dictionary
+#     issue_number = request.form.get("issue_number")  # Get the selected issue number
+#     GITHUB_TOKEN = session.get("github_oauth_token", {}).get("access_token")
+
+#     # Map the form data to the schema format
+#     schema_entry = makeFormJson(updated_data)  # Mapping form data to schema format
+
+#     # Construct the GitHub issue URL and the payload to send
+#     issue_url = f"https://api.github.com/repos/{REPO_OWNER}/{GITHUB_REPO}/issues/{issue_number}"
+#     comments_url = f"https://api.github.com/repos/{REPO_OWNER}/{GITHUB_REPO}/issues/{issue_number}/comments"
+#     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+
+#     # GitHub Payload includes the title and body, with the body containing the metadata as formatted JSON
+#     payload = {
+#         "title": f"Updated Submission: {updated_data.get('name', 'Unnamed Program')}",
+#         "body": "### Metadata Submission\n\n" + json.dumps(schema_entry, indent=4)  # Send the mapped schema as part of the body
+#     }
+
+#     # Step 1: Update the issue with new data (PATCH request)
+#     response = requests.patch(issue_url, json=payload, headers=headers)
+
+#     # Check if the issue was updated successfully
+#     if response.status_code == 200:
+#         # Step 2: Add a comment to the issue (POST request)
+#         comment_payload = {
+#             "body": f"Entry updated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"  # Add a timestamp for the update
+#         }
+#         comment_response = requests.post(comments_url, json=comment_payload, headers=headers)
+
+#         # Check if the comment was added successfully
+#         if comment_response.status_code == 201:
+#             issue_url = f"https://github.com/{REPO_OWNER}/{GITHUB_REPO}/issues/{issue_number}"
+#             return render_template("success.html", message="Issue updated successfully!", issue_url=issue_url)
+#         else:
+#             error_details = comment_response.json()
+#             return render_template("error.html", error="Failed to add update comment.", details=error_details)
+#     else:
+#         error_details = response.json()
+#         return render_template("error.html", error="Failed to update issue.", details=error_details)
 
 ####### Helper functions ########
 def fetch_projects_from_github():

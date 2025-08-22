@@ -38,15 +38,14 @@ def makeFormJson():
         project_name_sanitized = (shortname or project_name).replace(" ", "_")
         schema_entry["@id"] = f"https://raw.githubusercontent.com/BioEcoOcean/metadata-tracking-dev/refs/heads/main/jsonFiles/{project_name_sanitized}/{project_name_sanitized}.json"
 
-        ## Add legalName, name, url, description, frequency
+        ## Add legalName, name, url, description
         schema_entry["legalName"] = sanitized_data.get("project_name", [""])[0]
         if sanitized_data.get("shortname", [""])[0]:
             schema_entry["name"] = sanitized_data.get("shortname", [""])[0]
         schema_entry["url"] = sanitized_data.get("url", [""])[0]
         if sanitized_data.get("description", [""])[0]:
             schema_entry["description"] = sanitized_data.get("description", [""])[0]
-        #schema_entry["frequency"] = sanitized_data.get("frequency", ["Never"])[0] #need to figure out what this should be. frequency of sampling? but I also need an indication of how often metadata is updated for the sitemap so come back to
-
+        
         ## Handle the projid & identifier field
         projid_type = request.form.get("projid_type", "")
         identifier_types = form_schema.get("identifier_types", {})
@@ -74,12 +73,23 @@ def makeFormJson():
         ## Get the license field
         license_data = sanitized_data.get("license", [""])[0]
         license_name, license_url = license_data.split("|") if license_data else (license_data, "")
-        schema_entry["publishingPrinciples"] = {
+        publishing_principles =[{
             "@type": "CreativeWork",
             "name": license_name,
             "url": license_url
             #"text": "blah"  # add this so that users can input their own license
-        }
+        }]
+        datapolicy_name = sanitized_data.get("datapolicy_name", [""])[0]
+        datapolicy_text = sanitized_data.get("datapolicy_text", [""])[0]
+        datapolicy_url = sanitized_data.get("datapolicy_url", [""])[0]
+        if datapolicy_name and datapolicy_text and datapolicy_url:
+            publishing_principles.append({
+                "@type": "CreativeWork",
+                "name": datapolicy_name,
+                "url": datapolicy_url,
+                "text": datapolicy_text
+        })
+        schema_entry["publishingPrinciples"] = publishing_principles
         ## Add time coverage
         if sanitized_data.get("temporal_coverage_start", [""])[0]:
             schema_entry["foundingDate"] = sanitized_data.get("temporal_coverage_start", [""])[0]
@@ -340,7 +350,7 @@ def makeFormJson():
 
         # Add sampling frequency
         if sanitized_data.get("sampling_frequency", [""])[0]:
-            actions_json["frequency"] = sanitized_data.get("sampling_frequency", [""])[0]
+            actions_json["description"] = sanitized_data.get("sampling_frequency", [""])[0]
 
         ########## Create small file for frequency for the sitemap ##########
         metadata_frequency = {}

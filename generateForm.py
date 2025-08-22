@@ -64,7 +64,36 @@ def generate_form(prefilled_data=None, actions_data=None, frequency_data=None):
             selected = "selected" if projid_type_value == key else ""
             form_html += f"<option value='{key}' {selected}>{info['name']}</option>"
         form_html += "</select><br>"
-        form_html += "<a> If your desired type is not listed, please contact us to have it added.</a><br><br>"
+        form_html += "<a> If your desired type is not listed, please contact us to have it added. To generate a DOI for your entry, click the button and fill the form below, ten copy the generated DOI into the field above. Some fields may have been prepopulated for you using information in the form. Please confirm data is correct before creating your DOI. Contact helpdesk@obis.org to correct or update information.</a><br>"
+        # Add DataCite button
+        form_html += f"""
+        <button type="button" id="generate-doi-btn" onclick="toggleDoiForm()">Generate DOI</button>
+        <div id="doi-form-container" style="display: none; border: 1px solid #ccc; padding: 1px 15px; margin: 10px 0; background-color: #f9f9f9;">
+            <h3>DOI Information</h3>
+            <h4>Title</h4>
+            The title by which the resource is known.
+            <input type="text" id="doi-title" name="doi-title" placeholder="Title for the DOI" style="width: 100%; margin: 5px 0;">
+            
+            <h4>URL</h4>           
+            The location of the landing page with more information about the resource.
+            <input type="url" id="doi-url" name="doi-url" placeholder="https://example.com" style="width: 100%; margin: 5px 0;">
+            
+            <h4>Creator</h4>
+            The main researchers or organizations involved in producing the resource, in priority order.
+            <div id="creators-container">
+                <!-- Creators will be added here dynamically -->
+            </div>
+            <button type="button" onclick="addCreator()">Add Creator</button>          
+            
+            <h4>Publisher</h4>
+            The name of the entity that holds, archives, publishes prints, distributes, releases, issues, or produces the resource.
+            <input type="text" id="doi-publisher" name="doi-publisher" placeholder="Publisher Name" style="width: 100%; margin: 5px 0;">
+            
+            <button type="button" id="submit-doi-btn" onclick="submitDoiRequest()">Create DOI</button>
+            <button type="button" onclick="toggleDoiForm()">Cancel</button>
+        </div>
+        <span id="doi-result"></span>
+        """
 
         ### Description ###
         form_html += f"""
@@ -72,9 +101,20 @@ def generate_form(prefilled_data=None, actions_data=None, frequency_data=None):
         <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('description', 'N/A')}</div>
         <textarea name='description' id='description' maxlength="2000" placeholder="BioEcoOcean was funded by the European Union under grant agreement No. 101136748 with 5.7 million EUR to address this challenge. Over the course of 4 years, from February 2024 to January 2027, a consortium of 9 European partners aims to create, and demonstrate the value of, a globally applicable Blueprint for Integrated Ocean Science (BIOS).">{prefilled_data.get('description', '')}</textarea><br><br>
         """
+
         ### Keywords Section ###
+        #Get EOV names to filter against - note that I need to check there's not overlap with EOV section
+        variable_measured_fields = form_schema["categories_definition"]["variable_measured"]["fields"]
+        eov_names = set()
+        for field in variable_measured_fields.values():
+            if "options" in field:
+                eov_names.update(option["name"] for option in field["options"].values())
+
         keywords = prefilled_data.get("keywords", [])
-        keywords_display = ", ".join([keyword["name"] for keyword in keywords if "name" in keyword]) if keywords else "N/A"
+        # Filter keywords
+        true_keywords = [kw for kw in keywords if kw.get("name") not in eov_names]
+        print("True Keywords: ", true_keywords, flush=True)
+        keywords_display = ", ".join([keyword["name"] for keyword in true_keywords if "name" in keyword]) if true_keywords else "N/A"
         form_html += f"""
         <label for='keywords'>Keywords: <span class='info-circle' data-tooltip='Enter relevant keywords from controlled vocabulary collections for the data producer.'>ⓘ</span></label>
         Type in the box below to search for a keyword from a controlled vocabulary collection. This will query both The Environment Ontology (ENVO) and the BODC NERC Vocabulary Server.
@@ -108,6 +148,20 @@ def generate_form(prefilled_data=None, actions_data=None, frequency_data=None):
         <input type="hidden" id="selected-keywords-json" name="selected-keywords-json" value="">
         <br>
         """
+        # prefill only true keywords
+        if true_keywords:
+            for kw in true_keywords:
+                label = kw.get("name", "")
+                url = kw.get("url", "")
+                source = kw.get("source", "")
+                obo_id = kw.get("termCode", "")
+                form_html += f"""
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {{
+                        addSelectedKeyword("{label}", "{url}", "{source}", "{obo_id}");
+                    }});
+                </script>
+                """
 
         ### License section ###
         license_field = form_schema.get("categories_definition", {}).get("license", None)
@@ -115,7 +169,7 @@ def generate_form(prefilled_data=None, actions_data=None, frequency_data=None):
             license_value = prefilled_data.get("publishingPrinciples", {}).get("name", 'N/A')
 
             # Show previously entered value above the field
-            form_html += f"<label for='license'>{license_field['name']}:<span class='info-circle' data-tooltip='Select the most appropriate license for the data produced.'>ⓘ</span></label>"
+            form_html += f"<label for='license'>{license_field['name']}:<span class='info-circle' data-tooltip='Select the most appropriate license(s) for the data produced.'>ⓘ</span></label>"
             form_html += f"<p>Please select which Creative Commons license (<a href='https://creativecommons.org/share-your-work/cclicenses/'>https://creativecommons.org/share-your-work/cclicenses/</a>) you expect the data produced by your entry to adhere to. Select as many as applicable.</p>"
             if license_value:
                 form_html += f"<div class='previous'><strong>Previously entered:</strong> {license_value}</div>"
@@ -129,42 +183,70 @@ def generate_form(prefilled_data=None, actions_data=None, frequency_data=None):
             for option_key, option in license_field['options'].items(): #option_key is necessary to get the key from schema
                 selected = "selected" if option['name'] == license_value else ""
                 form_html += f"<option value='{option['name']}|{option['url']}' {selected}>{option['name']}</option>"
-            form_html += "</select><br><br>"
+            form_html += "</select><br>"
         else:
             # Handle the case where 'license' is missing
             form_html += "<p><strong>Error: License field is missing in the schema.</strong></p>"
-
-        ### Sampling frequency ###
+        form_html += "<a>If none of the licenses above apply, and/or you would like to provide the link to an organizational policy, please optionally fill in the fields below.</a><br>"
         form_html += f"""
-        <label for='sampling_frequency'>Sampling frequency:<span class='info-circle' data-tooltip='Select the frequency at which field sampling occurs.'>ⓘ</span></label>
-        <div class='previous'><strong>Previously entered:</strong> {actions_data.get('frequency', 'N/A')}</div>
-        <select name="sampling_frequency" id="sampling_frequency">
-            <option value="" disabled {'selected' if not actions_data.get('frequency', '') else ''}>Select an option</option>
-            <option value="never" {'selected' if actions_data.get('frequency', '') == 'once' else ''}>Never</option>
-            <option value="yearly" {'selected' if actions_data.get('frequency', '') == 'yearly' else ''}>Yearly</option>
-            <option value="asneeded" {'selected' if actions_data.get('frequency', '') == 'quarterly' else ''}>Quarterly</option>
-            <option value="monthly" {'selected' if actions_data.get('frequency', '') == 'monthly' else ''}>Monthly</option>
-            <option value="weekly" {'selected' if actions_data.get('frequency', '') == 'weekly' else ''}>Weekly</option>
-            <option value="daily" {'selected' if actions_data.get('frequency', '') == 'daily' else ''}>Daily</option>
-            <option value="hourly" {'selected' if actions_data.get('frequency', '') == 'hourly' else ''}>Hourly</option>
-            <option value="other" {'selected' if actions_data.get('frequency', '') == 'other' else ''}>Other</option>
-        </select>
+        <input type="text" name="datapolicy_name" id='datapolicy_name' placeholder="Name of policy, e.g. IOC Data Policy and Terms of Use (2023)">
+        <input type="text" name="datapolicy_text" id='datapolicy_text' placeholder="Brief description of policy">
+        <input type="text" name="datapolicy_url" id='datapolicy_url' placeholder="URL pointing to policy, e.g. https://iode.org/resources/ioc-data-policy-and-terms-of-use-2023/">
         <br><br>
         """
 
+        ### Sampling frequency ###
+        frequency_options = form_schema["categories_definition"]["frequency"]["options"]
+        sampling_freq_value = actions_data.get('description', '')
+
+        form_html += f"""
+        <label for='sampling_frequency'>Sampling frequency:<span class='info-circle' data-tooltip='Select the frequency at which field sampling occurs.'>ⓘ</span></label>
+        <div class='previous'><strong>Previously entered:</strong> {sampling_freq_value if sampling_freq_value else 'N/A'}</div>
+        <select name="sampling_frequency" id="sampling_frequency">
+            <option value="" disabled {'selected' if not sampling_freq_value else ''}>Select an option</option>
+        """
+
+        for key, option in frequency_options.items():
+            selected = "selected" if sampling_freq_value == key else ""
+            form_html += f"<option value='{key}' {selected}>{option['name'].title()}</option>"
+
+        form_html += """
+        </select>
+        <br><br>
+        """
+        #old sampling freq code
+        # form_html += f"""
+        # <label for='sampling_frequency'>Sampling frequency:<span class='info-circle' data-tooltip='Select the frequency at which field sampling occurs.'>ⓘ</span></label>
+        # <div class='previous'><strong>Previously entered:</strong> {actions_data.get('description', 'N/A')}</div>
+        # <select name="sampling_frequency" id="sampling_frequency">
+        #     <option value="" disabled {'selected' if not actions_data.get('description', '') else ''}>Select an option</option>
+        #     <option value="never" {'selected' if actions_data.get('description', '') == 'once' else ''}>Never</option>
+        #     <option value="yearly" {'selected' if actions_data.get('description', '') == 'yearly' else ''}>Yearly</option>
+        #     <option value="asneeded" {'selected' if actions_data.get('description', '') == 'quarterly' else ''}>Quarterly</option>
+        #     <option value="monthly" {'selected' if actions_data.get('description', '') == 'monthly' else ''}>Monthly</option>
+        #     <option value="weekly" {'selected' if actions_data.get('description', '') == 'weekly' else ''}>Weekly</option>
+        #     <option value="daily" {'selected' if actions_data.get('description', '') == 'daily' else ''}>Daily</option>
+        #     <option value="hourly" {'selected' if actions_data.get('description', '') == 'hourly' else ''}>Hourly</option>
+        #     <option value="other" {'selected' if actions_data.get('description', '') == 'other' else ''}>Other</option>
+        # </select>
+        # <br><br>
+        # """
+
         ### Update frequency ###
+        update_freq_value = frequency_data.get('frequency', '')
+
         form_html += f"""
         <label for='frequency'>Metadata update frequency:<span class="required">*</span><span class='info-circle' data-tooltip='Select the frequency you expect metadata documented in this form to be updated.'>ⓘ</span></label>
-        <div class='previous'><strong>Previously entered:</strong> {frequency_data.get('frequency', 'N/A')}</div>
+        <div class='previous'><strong>Previously entered:</strong> {update_freq_value if update_freq_value else 'N/A'}</div>
         <select name="frequency" id="frequency" required>
-            <option value="" disabled {'selected' if not frequency_data.get('frequency', '') else ''}>Select an option</option>
-            <option value="never" {'selected' if frequency_data.get('frequency', '') == 'never' else ''}>Never</option>
-            <option value="asneeded" {'selected' if frequency_data.get('frequency', '') == 'asneeded' else ''}>As Needed</option>
-            <option value="yearly" {'selected' if frequency_data.get('frequency', '') == 'yearly' else ''}>Yearly</option>
-            <option value="monthly" {'selected' if frequency_data.get('frequency', '') == 'monthly' else ''}>Monthly</option>
-            <option value="weekly" {'selected' if frequency_data.get('frequency', '') == 'weekly' else ''}>Weekly</option>
-            <option value="daily" {'selected' if frequency_data.get('frequency', '') == 'daily' else ''}>Daily</option>
-            <option value="hourly" {'selected' if frequency_data.get('frequency', '') == 'hourly' else ''}>Hourly</option>
+            <option value="" disabled {'selected' if not update_freq_value else ''}>Select an option</option>
+        """
+
+        for key, option in frequency_options.items():
+            selected = "selected" if update_freq_value == key else ""
+            form_html += f"<option value='{key}' {selected}>{option['name'].title()}</option>"
+
+        form_html += """
         </select>
         """
         form_html += "<hr style='border: none; border-bottom: dashed 2px #002366; '>"
@@ -378,6 +460,7 @@ def generate_form(prefilled_data=None, actions_data=None, frequency_data=None):
             html = ""
             for field_key, field in fields.items():
                 if "options" in field:  # Checkbox handling
+                    html += f"<label for='{field_key}'><h4>{field.get('name', 'Unknown Field')}</h4></label>"
                     if field_key == "bioeco_eovs":
                         prev = ', '.join(selected_bioeco) or 'N/A'
                         html += f"<div class='previous'><strong>BioEco EOVs previously entered:</strong> {prev}</div>"
@@ -391,7 +474,7 @@ def generate_form(prefilled_data=None, actions_data=None, frequency_data=None):
                         prev = ', '.join(selected_ebvs) or 'N/A'
                         html += f"<div class='previous'><strong>EBVs previously entered:</strong> {prev}</div>"
 
-                    html += f"<label for='{field_key}'><h4>{field.get('name', 'Unknown Field')}</h4></label>"
+                    
 
                     # Ensure category_value is a list if it's a string
                     #category_value_list = category_value.split(", ") if isinstance(category_value, str) else category_value
@@ -416,44 +499,6 @@ def generate_form(prefilled_data=None, actions_data=None, frequency_data=None):
         form_html += "<h2>EOV info<span class='info-circle' data-tooltip='For each section below, check the variables measured'>ⓘ</span></h2>"
         eov_fields = form_schema["categories_definition"]["variable_measured"]["fields"]
         form_html += process_fields(eov_fields, prefilled_data)
-        # filtered_categories = {
-        #     "variableMeasured": variables_measured,
-        #     "measurementTechnique": measurement_techniques,
-        #     **{key: val for key, val in form_schema.get("categories_definition").items() if key not in ["license", "variable_measured", "measurementTechnique"]}
-        # }
-
-        # # Iterate through categories and generate HTML
-        # for category_key, category in filtered_categories.items():
-        #     # Add category name and description
-        #     form_html += f"<h3>{category.get('name', 'Unknown Category')}<span class='info-circle' data-tooltip='{category.get('description', '')}'>ⓘ</span></h3>"
-        #     # Special handling for `variableMeasured` and `measurementTechnique`
-        #     if category_key in ["variableMeasured", "measurementTechnique"]:
-        #         category_value = format_special_category_values(prefilled_data, category_key)
-        #     else:
-        #         category_value = prefilled_data.get(category_key, "N/A")
-        #     # print("cat value: ", category_value) #debugging
-
-        #     # Display previously entered values
-        #     fields = category.get("fields", {})
-        #     for field_key, field in fields.items():
-        #         # Determine which group this field belongs to and show the appropriate "previously entered"
-        #         if field_key == "bioeco_eovs":
-        #             prev = ', '.join(selected_bioeco) or 'N/A'
-        #             form_html += f"<div class='previous'><strong>BioEco EOVs previously entered:</strong> {prev}</div>"
-        #         elif field_key == "other_eovs":
-        #             prev = ', '.join(selected_other) or 'N/A'
-        #             form_html += f"<div class='previous'><strong>Other EOVs previously entered:</strong> {prev}</div>"
-        #         elif field_key == "sub-variables":
-        #             prev = ', '.join(selected_subvars) or 'N/A'
-        #             form_html += f"<div class='previous'><strong>Sub-variables previously entered:</strong> {prev}</div>"
-        #         elif field_key == "ebvs":
-        #             prev = ', '.join(selected_ebvs) or 'N/A'
-        #             form_html += f"<div class='previous'><strong>EBVs previously entered:</strong> {prev}</div>"
-        #     form_html += f"<div class='previous'><strong>Previously entered:</strong> {category_value}</div>"
-
-        #     # Process fields for this category
-        #     #fields = category.get("fields", {})
-        #     form_html += process_fields({field_key: field}, prefilled_data, category_value)
 
         ### Platforms ###
         instruments = actions_data.get("instrument", [])
