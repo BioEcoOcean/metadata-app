@@ -1,0 +1,34 @@
+{% extends "layouts/header.html" %}
+
+{% block title %}EOV Data Tools{% endblock %}
+
+{% block content %}
+
+<h1>Remove an Entry</h1>
+<p>If for some reason you need to remove an entry from this system, you can do so by selecting the entry below. It make take several minutes for your entry to be removed. If after >24 hours you still see your entry, please contact us.</p>
+<p>You must be logged in to your GitHub account to remove an entry.</p>
+
+{% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+{% if issues %}
+    <form method="post">
+        <h2>Select an entry:</h2>
+        <ul>
+        {% for issue in issues %}
+            <li>
+                <label>
+                    <input type="radio" name="selected_issue" value="{{ issue.number }}">
+                    {{ issue.title }} (#{{ issue.number }}) <a href="{{ issue.url }}" target="_blank">here</a>
+                </label>
+            </li>
+        {% endfor %}
+        </ul>
+        <button type="submit" style="background-color: darkred;">Mark for Removal</button>
+    </form>
+{% else %}
+    <p>No entries found for your user.</p>
+{% endif %}
+
+{% endblock %}

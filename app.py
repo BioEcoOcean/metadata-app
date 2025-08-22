@@ -315,6 +315,55 @@ def update_entry():
         else:
             return jsonify({"success": False, "error": "No issue selected."})
 
+@app.route("/remove_entry", methods=["GET", "POST"])
+def remove_entry():
+    if not github.authorized:
+        return redirect(url_for("github.login"))
+
+    user = session.get("user")
+    if not user:
+        resp = github.get("/user")
+        if not resp.ok:
+            return redirect(url_for('index'))
+        user = resp.json()
+        session["user"] = user
+
+    github_token = session.get("github_oauth_token", {}).get("access_token")
+    headers = {"Authorization": f"token {github_token}"}
+    username = user.get("login")
+
+    # Fetch issues created by this user with the "metadata submission" label
+    params = {"creator": username, "labels": "metadata submission"}
+    response = requests.get(GITHUB_API_URL, headers=headers, params=params, timeout=10)
+    issues = response.json() if response.status_code == 200 else []
+
+    if request.method == "POST":
+        issue_number = request.form.get("selected_issue")
+        if not issue_number:
+            return render_template("remove_entry.html", issues=issues, error="No issue selected.")
+
+        # Update labels on the selected issue
+        issue_url = f"{GITHUB_API_URL}/{issue_number}"
+        # Get current labels
+        issue_resp = requests.get(issue_url, headers=headers, timeout=10)
+        if issue_resp.status_code != 200:
+            return render_template("remove_entry.html", issues=issues, error="Could not fetch issue details.")
+
+        current_labels = [label["name"] for label in issue_resp.json().get("labels", [])]
+        # Remove "metadata submission", add "remove entry"
+        new_labels = [l for l in current_labels if l != "metadata submission"]
+        if "remove entry" not in new_labels:
+            new_labels.append("remove entry")
+
+        patch_resp = requests.patch(issue_url, headers=headers, json={"labels": new_labels})
+        if patch_resp.status_code == 200:
+            return render_template("success.html", issue_url=issue_url, message="Entry marked for removal.")
+        else:
+            return render_template("remove_entry.html", issues=issues, issue_url=issue_url, error="Failed to update issue labels.")
+
+    return render_template("remove_entry.html", issues=issues)
+
+
 @app.route('/generate_doi', methods=['POST'])
 def generate_doi():
     data = request.json
