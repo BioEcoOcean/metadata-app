@@ -32,7 +32,7 @@ def generate_form(prefilled_data=None, actions_data=None, frequency_data=None):
         """
         ### Project Name ###
         form_html += f"""
-        <h4><label for='project_name'>Data Producer Name:<span class="required">*</span><span class="info-circle" data-tooltip="Enter the full name or title of the data producer.">ⓘ</span></label></h4>
+        <h4><label for='project_name'>Data Producer Name:<span class="required">*</span><span class="info-circle" data-tooltip="Enter the full name or title of the data producer. Data producers may include monitoring programs, projects, institutions, etc.">ⓘ</span></label></h4>
         <div class='previous'><strong>Previously entered:</strong> {prefilled_data.get('legalName', 'N/A')}</div>
         <input type='text' name='project_name' id='project_name' value="{prefilled_data.get('legalName', '')}" placeholder="Co-Creating Transformative Pathways to Biological and Ecosystem Ocean Observations" required><br><br>
         """
@@ -331,7 +331,7 @@ def generate_form(prefilled_data=None, actions_data=None, frequency_data=None):
         
         # Temporal coverage
         form_html += f"""
-        <h3><label for='temporal_coverage'>Temporal Coverage:<span class="info-circle" data-tooltip="Specify the date range for the project.">ⓘ</span></label></h3>
+        <h3><label for='temporal_coverage'>Temporal Coverage:<span class="info-circle" data-tooltip="Specify the date range for the project. Leave End Date blank if there is no known end date.">ⓘ</span></label></h3>
         <div class='previous'><strong>Previously entered:</strong>
             Start: {prefilled_data.get('foundingDate', 'N/A')},
             End: {prefilled_data.get('dissolutionDate', 'N/A')}</div>
