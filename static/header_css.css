@@ -32,7 +32,6 @@ nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     position: sticky; 
     top: auto;
@@ -44,6 +43,7 @@ nav {
 nav .navbar { /* Navbar Title */
     font-size: 1.8rem;
     font-weight: bold;
+    padding: 10px;
 }
 /* Navbar Menu */
 .navbar-menu {
@@ -84,7 +84,6 @@ hr {
     background-color: #002366;
     color: white;
     text-align: center;
-    padding: 10px;
     position: relative;
     bottom: 0;
     width: 100%;
@@ -104,6 +103,7 @@ hr {
     align-items: flex-start;
     gap: 10px;
     max-width: 100%;
+    padding: 10px;
 }
 .footer-col {
     flex: 1 1 0;
